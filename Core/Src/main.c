@@ -56,7 +56,7 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t ODR;
+GPIO_PinState flag;
 /* USER CODE END 0 */
 
 /**
@@ -96,10 +96,15 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-    ODR = LED2_harry_GPIO_Port->ODR;
-    HAL_Delay(500);
-
+    flag = HAL_GPIO_ReadPin(BLUE_BUTTON_harry_GPIO_Port, BLUE_BUTTON_harry_Pin);
+    if (flag)
+    {
+      HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_RESET);
+    }
+    else
+    {
+      HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_SET);
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
