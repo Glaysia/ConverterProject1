@@ -56,7 +56,7 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint32_t ODR;
 /* USER CODE END 0 */
 
 /**
@@ -95,8 +95,11 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  while (1) {
+    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+    ODR = LED2_harry_GPIO_Port->ODR;
+    HAL_Delay(500);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
