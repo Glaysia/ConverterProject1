@@ -291,6 +291,35 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+// Decrement PWM period on each button press (PC13 EXTI),
+// wrapping 700..719 and keeping 50% duty.
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin != B1_Pin) {
+    return;
+  }
+
+  // Simple software debounce (~50 ms)
+  static uint32_t last_tick = 0;
+  uint32_t now = HAL_GetTick();
+  if ((now - last_tick) < 50U) {
+    return;
+  }
+  last_tick = now;
+
+  // Read current ARR, decrement with wrap 719->700 range
+  uint32_t arr = __HAL_TIM_GET_AUTORELOAD(&htim1);
+  if (arr <= 700U) {
+    arr = 719U;
+  } else {
+    arr -= 4U;
+  }
+
+  // Apply new ARR and keep 50% duty on CH1
+  __HAL_TIM_SET_AUTORELOAD(&htim1, arr);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, (arr + 1U) / 2U);
+}
+
 /* USER CODE END 4 */
 
 /**
