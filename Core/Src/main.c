@@ -220,12 +220,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-// void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-//   if(GPIO_Pin == Switch_interrupt_harry_Pin){
-//     PC13_Counter++;
-//     HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-//   }
-// }
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+  if(GPIO_Pin == external_signal_harry_Pin){
+    PC13_Counter++;
+    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+  }
+}
 /* USER CODE END 4 */
 
 /**
