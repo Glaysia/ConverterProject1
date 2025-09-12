@@ -18,11 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f1xx_hal_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stm32f1xx_hal_gpio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -193,25 +192,27 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : Switch_interrupt_harry_Pin */
-  GPIO_InitStruct.Pin = Switch_interrupt_harry_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(Switch_interrupt_harry_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED2_harry_Pin */
   GPIO_InitStruct.Pin = LED2_harry_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED2_harry_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : external_signal_harry_Pin */
+  GPIO_InitStruct.Pin = external_signal_harry_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(external_signal_harry_GPIO_Port, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -219,12 +220,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  if(GPIO_Pin == Switch_interrupt_harry_Pin){
-    PC13_Counter++;
-    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-  }
-}
+// void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+//   if(GPIO_Pin == Switch_interrupt_harry_Pin){
+//     PC13_Counter++;
+//     HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+//   }
+// }
 /* USER CODE END 4 */
 
 /**
