@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f1xx_hal_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -56,7 +57,7 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-GPIO_PinState flag;
+volatile uint16_t PC13_Counter = 0;
 /* USER CODE END 0 */
 
 /**
@@ -96,15 +97,6 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    flag = HAL_GPIO_ReadPin(Switch_interrupt_harry_GPIO_Port, Switch_interrupt_harry_Pin);
-    if (flag)
-    {
-      HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_RESET);
-    }
-    else
-    {
-      HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_SET);
-    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -227,7 +219,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+  if(GPIO_Pin == Switch_interrupt_harry_Pin){
+    PC13_Counter++;
+    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+  }
+}
 /* USER CODE END 4 */
 
 /**
