@@ -1,4 +1,4 @@
-# HW1
+# Lecture 2
 - ![기능1](images/hw1_1.png)
 - ![기능2](images/hw1_2.png)
 - contents/Lec02 - STM32 Fundamentals (GPIO)_dist.pdf
@@ -23,3 +23,12 @@
 - 과제:
     - HAL_GPIO_TogglePin() 함수와 HAL_Delay() 함수를 이용하여 PA5에 연결되어 있는 LD2 LED를 0.5[초] 마다 점멸하도록 Coding (조교확인필수)
     - 참고: void HAL_Delay(uint32_t Delay): [ms] 단위로 delay 생성!
+
+
+# Lecture 3
+- ![기능3](images/lec3_1.png)
+- ![alt text](images/lec3_2.png)
+
+## TODO
+    1. 버튼 사용하여 LED 꺼지고 켜지는 것을 interrupt를 사용하여 구현하기
+    2. 함수발생기 사용하여 LED 꺼지고 켜지는 것을 interrupt를 사용하여 구현하기
