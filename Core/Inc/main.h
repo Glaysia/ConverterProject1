@@ -64,9 +64,12 @@ void Error_Handler(void);
 #define LED2_harry_Pin GPIO_PIN_5
 #define LED2_harry_GPIO_Port GPIOA
 #define LED2_harry_EXTI_IRQn EXTI9_5_IRQn
-#define external_signal_harry_Pin GPIO_PIN_8
-#define external_signal_harry_GPIO_Port GPIOA
-#define external_signal_harry_EXTI_IRQn EXTI9_5_IRQn
+#define PB10_TIM3_HARRY_Pin GPIO_PIN_10
+#define PB10_TIM3_HARRY_GPIO_Port GPIOB
+#define PA8_TIM2_HARRY_Pin GPIO_PIN_8
+#define PA8_TIM2_HARRY_GPIO_Port GPIOA
+#define PA9_TIM1_HARRY_Pin GPIO_PIN_9
+#define PA9_TIM1_HARRY_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
