@@ -96,6 +96,22 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+    HAL_GPIO_WritePin(PC0_harry_GPIO_Port, PC0_harry_Pin, GPIO_PIN_SET); 
+    // FOR EXIT7
+    HAL_Delay(100);
+    HAL_GPIO_WritePin(PC1_harry_GPIO_Port,  PC1_harry_Pin, GPIO_PIN_SET); 
+    // FOR EXIT6
+    HAL_Delay(100);
+    HAL_GPIO_WritePin(PC2_harry_GPIO_Port, PC2_harry_Pin, GPIO_PIN_SET); 
+    // FOR EXIT5
+    HAL_Delay(100);
+    HAL_GPIO_WritePin(PC3_harry_GPIO_Port, PC3_harry_Pin, GPIO_PIN_SET); 
+    // FOR EXIT4
+    HAL_Delay(100);
+    
+
+
+    HAL_Delay(10000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -205,10 +221,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA4_EXTI4_harry_Pin PA6_EXTI6_harry_Pin PA7_EXTI7_harry_Pin */
-  GPIO_InitStruct.Pin = PA4_EXTI4_harry_Pin|PA6_EXTI6_harry_Pin|PA7_EXTI7_harry_Pin;
+  /*Configure GPIO pins : PA1_EXTI1_harry_Pin PA6_EXTI6_harry_Pin PA7_EXTI7_harry_Pin */
+  GPIO_InitStruct.Pin = PA1_EXTI1_harry_Pin|PA6_EXTI6_harry_Pin|PA7_EXTI7_harry_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED2_harry_Pin */
@@ -218,11 +234,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED2_harry_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC5_EXTI5_harry_Pin */
-  GPIO_InitStruct.Pin = PC5_EXTI5_harry_Pin;
+  /*Configure GPIO pins : PC4_EXTI4_harry_Pin PC5_EXTI5_harry_Pin */
+  GPIO_InitStruct.Pin = PC4_EXTI4_harry_Pin|PC5_EXTI5_harry_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(PC5_EXTI5_harry_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : ext_interrupt_harry_Pin */
   GPIO_InitStruct.Pin = ext_interrupt_harry_Pin;
@@ -231,6 +247,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(ext_interrupt_harry_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
@@ -240,11 +259,31 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  if(GPIO_Pin == ext_interrupt_harry_Pin){
-    PC13_Counter++;
+inline void toggle_led(int hz){
+  int msecond = 2000;
+  int delay = 1000 / (hz * 2);  
+  int N = msecond / delay;
+
+  for (int i = 0; i < N; i++){
     HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+    HAL_Delay(delay);
   }
+
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+  if(GPIO_Pin == PA0_EXTI0_harry_Pin)
+    toggle_led(10);
+  
+  else if (GPIO_Pin == PC5_EXTI5_harry_Pin)
+    toggle_led( 5);
+  
+  else if (GPIO_Pin == PA6_EXTI6_harry_Pin)
+    toggle_led( 2);
+  
+  else if (GPIO_Pin == PA7_EXTI7_harry_Pin)
+    toggle_led( 1);
+  
 }
 /* USER CODE END 4 */
 

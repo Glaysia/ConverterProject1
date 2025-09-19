@@ -65,12 +65,12 @@ void Error_Handler(void);
 #define PC2_harry_GPIO_Port GPIOC
 #define PC3_harry_Pin GPIO_PIN_3
 #define PC3_harry_GPIO_Port GPIOC
+#define PA1_EXTI1_harry_Pin GPIO_PIN_1
+#define PA1_EXTI1_harry_GPIO_Port GPIOA
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
-#define PA4_EXTI4_harry_Pin GPIO_PIN_4
-#define PA4_EXTI4_harry_GPIO_Port GPIOA
 #define LED2_harry_Pin GPIO_PIN_5
 #define LED2_harry_GPIO_Port GPIOA
 #define PA6_EXTI6_harry_Pin GPIO_PIN_6
@@ -79,6 +79,9 @@ void Error_Handler(void);
 #define PA7_EXTI7_harry_Pin GPIO_PIN_7
 #define PA7_EXTI7_harry_GPIO_Port GPIOA
 #define PA7_EXTI7_harry_EXTI_IRQn EXTI9_5_IRQn
+#define PC4_EXTI4_harry_Pin GPIO_PIN_4
+#define PC4_EXTI4_harry_GPIO_Port GPIOC
+#define PC4_EXTI4_harry_EXTI_IRQn EXTI4_IRQn
 #define PC5_EXTI5_harry_Pin GPIO_PIN_5
 #define PC5_EXTI5_harry_GPIO_Port GPIOC
 #define PC5_EXTI5_harry_EXTI_IRQn EXTI9_5_IRQn
