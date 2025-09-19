@@ -21,7 +21,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stm32f1xx_hal.h"
+#include "stm32f1xx_hal_flash.h"
+#include "stm32f1xx_hal_flash_ex.h"
 #include "stm32f1xx_hal_gpio.h"
+#include <stdint.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,11 +41,16 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define ADDR_FLASH_PAGE_56   ((uint32_t)0x0800E000) /* Base @ of Page 56, 1 Kbytes */
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
+uint32_t FlashDemodata = 2021440107;
+uint32_t FlashDataRead = 0;
+uint8_t write_flash(uint32_t page_address, uint32_t data, uint8_t count_of_writes);
+uint32_t read_flash(uint32_t page_address);
+uint32_t* PW_DEBUG = (uint32_t*)(&(EXTI->PR));
 
 /* USER CODE BEGIN PV */
 
@@ -90,9 +100,9 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  printf("Hello World!\r\n debug: %d", *PW_DEBUG);
   /* USER CODE END 2 */
-
+  
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
@@ -225,6 +235,36 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
     PC13_Counter++;
     HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
   }
+}
+void HAL_PWR_PVDCallback(void)
+{
+  write_flash(ADDR_FLASH_PAGE_56, FlashDemodata, 1);
+}
+
+
+uint8_t write_flash(uint32_t page_address, uint32_t data, uint8_t count_of_writes){
+  static FLASH_EraseInitTypeDef EraseInitStruct;
+  uint32_t PAGEError;
+  uint8_t i, ret;
+
+  EraseInitStruct.TypeErase = 0x00;
+  EraseInitStruct.PageAddress = page_address;
+  EraseInitStruct.NbPages = 1; // 128 bytes
+  HAL_FLASH_Unlock();
+  if(HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK){
+    ret = 0;
+  }else{
+    for(i=0;i<count_of_writes;i++)
+      HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, page_address+(i*4),data);
+    ret = 1;
+  }
+  
+  HAL_FLASH_Lock();
+  return ret;
+}
+
+uint32_t read_flash(uint32_t page_address){
+  return (*(__IO uint32_t*)page_address);
 }
 /* USER CODE END 4 */
 
