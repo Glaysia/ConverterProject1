@@ -57,15 +57,15 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define Switch_interrupt_harry_Pin GPIO_PIN_13
-#define Switch_interrupt_harry_GPIO_Port GPIOC
-#define Switch_interrupt_harry_EXTI_IRQn EXTI15_10_IRQn
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
 #define LED2_harry_Pin GPIO_PIN_5
 #define LED2_harry_GPIO_Port GPIOA
+#define ext_interrupt_harry_Pin GPIO_PIN_8
+#define ext_interrupt_harry_GPIO_Port GPIOA
+#define ext_interrupt_harry_EXTI_IRQn EXTI9_5_IRQn
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
