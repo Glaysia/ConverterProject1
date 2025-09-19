@@ -57,12 +57,31 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define PC0_harry_Pin GPIO_PIN_0
+#define PC0_harry_GPIO_Port GPIOC
+#define PC1_harry_Pin GPIO_PIN_1
+#define PC1_harry_GPIO_Port GPIOC
+#define PC2_harry_Pin GPIO_PIN_2
+#define PC2_harry_GPIO_Port GPIOC
+#define PC3_harry_Pin GPIO_PIN_3
+#define PC3_harry_GPIO_Port GPIOC
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
+#define PA4_EXTI4_harry_Pin GPIO_PIN_4
+#define PA4_EXTI4_harry_GPIO_Port GPIOA
 #define LED2_harry_Pin GPIO_PIN_5
 #define LED2_harry_GPIO_Port GPIOA
+#define PA6_EXTI6_harry_Pin GPIO_PIN_6
+#define PA6_EXTI6_harry_GPIO_Port GPIOA
+#define PA6_EXTI6_harry_EXTI_IRQn EXTI9_5_IRQn
+#define PA7_EXTI7_harry_Pin GPIO_PIN_7
+#define PA7_EXTI7_harry_GPIO_Port GPIOA
+#define PA7_EXTI7_harry_EXTI_IRQn EXTI9_5_IRQn
+#define PC5_EXTI5_harry_Pin GPIO_PIN_5
+#define PC5_EXTI5_harry_GPIO_Port GPIOC
+#define PC5_EXTI5_harry_EXTI_IRQn EXTI9_5_IRQn
 #define ext_interrupt_harry_Pin GPIO_PIN_8
 #define ext_interrupt_harry_GPIO_Port GPIOA
 #define ext_interrupt_harry_EXTI_IRQn EXTI9_5_IRQn
