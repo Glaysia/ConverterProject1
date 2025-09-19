@@ -51,12 +51,13 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+void toggle_led(int hz);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 volatile uint16_t PC13_Counter = 0;
+int hz;
 /* USER CODE END 0 */
 
 /**
@@ -97,23 +98,33 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1) {
     HAL_GPIO_WritePin(PC0_harry_GPIO_Port, PC0_harry_Pin, GPIO_PIN_SET); 
-    // FOR EXIT7
-    HAL_Delay(100);
+    // // FOR EXIT7
+    
+    // // HAL_Delay(1);
     HAL_GPIO_WritePin(PC1_harry_GPIO_Port,  PC1_harry_Pin, GPIO_PIN_SET); 
-    // FOR EXIT6
-    HAL_Delay(100);
+    // // FOR EXIT6
+    
+    // // HAL_Delay(1);
     HAL_GPIO_WritePin(PC2_harry_GPIO_Port, PC2_harry_Pin, GPIO_PIN_SET); 
-    // FOR EXIT5
-    HAL_Delay(100);
+    // // FOR EXIT5
+    
+    // HAL_Delay(1);
     HAL_GPIO_WritePin(PC3_harry_GPIO_Port, PC3_harry_Pin, GPIO_PIN_SET); 
     // FOR EXIT4
-    HAL_Delay(100);
     
-
-
-    HAL_Delay(10000);
+    // HAL_Delay(1);
+    
+    
+    
+    toggle_led(hz);
+    HAL_Delay(1500);
+    HAL_GPIO_WritePin(PC0_harry_GPIO_Port, PC0_harry_Pin, GPIO_PIN_RESET); 
+    HAL_GPIO_WritePin(PC1_harry_GPIO_Port, PC1_harry_Pin, GPIO_PIN_RESET); 
+    HAL_GPIO_WritePin(PC2_harry_GPIO_Port, PC2_harry_Pin, GPIO_PIN_RESET); 
+    HAL_GPIO_WritePin(PC3_harry_GPIO_Port, PC3_harry_Pin, GPIO_PIN_RESET); 
+    
     /* USER CODE END WHILE */
-
+    
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -247,7 +258,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(ext_interrupt_harry_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
@@ -259,7 +270,7 @@ HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
 }
 
 /* USER CODE BEGIN 4 */
-inline void toggle_led(int hz){
+void toggle_led(int hz){
   int msecond = 2000;
   int delay = 1000 / (hz * 2);  
   int N = msecond / delay;
@@ -268,22 +279,22 @@ inline void toggle_led(int hz){
     HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
     HAL_Delay(delay);
   }
-
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  if(GPIO_Pin == PA0_EXTI0_harry_Pin)
-    toggle_led(10);
-  
-  else if (GPIO_Pin == PC5_EXTI5_harry_Pin)
-    toggle_led( 5);
-  
-  else if (GPIO_Pin == PA6_EXTI6_harry_Pin)
-    toggle_led( 2);
-  
-  else if (GPIO_Pin == PA7_EXTI7_harry_Pin)
-    toggle_led( 1);
-  
+  if(GPIO_Pin == PC4_EXTI4_harry_Pin){
+    hz=10;
+  }
+  else if (GPIO_Pin == PC5_EXTI5_harry_Pin){
+    hz=5;
+  }
+  else if (GPIO_Pin == PA6_EXTI6_harry_Pin){
+    hz=2;
+  }
+  else if (GPIO_Pin == PA7_EXTI7_harry_Pin){
+    hz=1;
+  }
+  return;
 }
 /* USER CODE END 4 */
 
