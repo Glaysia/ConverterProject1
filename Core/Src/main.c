@@ -100,7 +100,9 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start_IT(&htim1);
+  HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_Base_Start_IT(&htim3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -130,7 +132,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -382,7 +384,17 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+  if(htim->Instance==TIM1){ //1ms
+    HAL_GPIO_TogglePin(PA9_TIM1_HARRY_GPIO_Port, PA9_TIM1_HARRY_Pin);
+  }
+  if(htim->Instance==TIM2){ // 2ms
+    HAL_GPIO_TogglePin(PA8_TIM2_HARRY_GPIO_Port, PA8_TIM2_HARRY_Pin);
+  }
+  if(htim->Instance==TIM3){ // 100ms
+    HAL_GPIO_TogglePin(PB10_TIM3_HARRY_GPIO_Port, PB10_TIM3_HARRY_Pin);
+  }                                                           
+}
 /* USER CODE END 4 */
 
 /**
