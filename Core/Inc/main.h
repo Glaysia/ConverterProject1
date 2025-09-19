@@ -57,15 +57,27 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define Switch_interrupt_harry_Pin GPIO_PIN_13
-#define Switch_interrupt_harry_GPIO_Port GPIOC
-#define Switch_interrupt_harry_EXTI_IRQn EXTI15_10_IRQn
+#define PC13_harry_Pin GPIO_PIN_13
+#define PC13_harry_GPIO_Port GPIOC
+#define PC13_harry_EXTI_IRQn EXTI15_10_IRQn
+#define PC0_harry_Pin GPIO_PIN_0
+#define PC0_harry_GPIO_Port GPIOC
+#define PC1_harry_Pin GPIO_PIN_1
+#define PC1_harry_GPIO_Port GPIOC
+#define PC3_harry_Pin GPIO_PIN_3
+#define PC3_harry_GPIO_Port GPIOC
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
 #define LED2_harry_Pin GPIO_PIN_5
 #define LED2_harry_GPIO_Port GPIOA
+#define PB1_harry_Pin GPIO_PIN_1
+#define PB1_harry_GPIO_Port GPIOB
+#define PB1_harry_EXTI_IRQn EXTI1_IRQn
+#define PC8_harry_Pin GPIO_PIN_8
+#define PC8_harry_GPIO_Port GPIOC
+#define PC8_harry_EXTI_IRQn EXTI9_5_IRQn
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14

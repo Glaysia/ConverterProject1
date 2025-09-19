@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f1xx_hal_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -194,13 +193,23 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, PC0_harry_Pin|PC1_harry_Pin|PC3_harry_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : Switch_interrupt_harry_Pin */
-  GPIO_InitStruct.Pin = Switch_interrupt_harry_Pin;
+  /*Configure GPIO pins : PC13_harry_Pin PC8_harry_Pin */
+  GPIO_InitStruct.Pin = PC13_harry_Pin|PC8_harry_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(Switch_interrupt_harry_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC0_harry_Pin PC1_harry_Pin PC3_harry_Pin */
+  GPIO_InitStruct.Pin = PC0_harry_Pin|PC1_harry_Pin|PC3_harry_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED2_harry_Pin */
   GPIO_InitStruct.Pin = LED2_harry_Pin;
@@ -209,8 +218,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED2_harry_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PB1_harry_Pin */
+  GPIO_InitStruct.Pin = PB1_harry_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(PB1_harry_GPIO_Port, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 7, 0);
+  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 8, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -219,10 +240,56 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void Delay(uint32_t Delay)
+{
+  while(Delay) {
+    Delay--;
+  }
+}
+
+void Delay_50ms(float N){
+  Delay((uint32_t)(265967*N));
+}
+
+void LED_250ms(){
+    int i=0;
+    while (i<40) {
+      Delay_50ms(5);
+      i++;
+      HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+      HAL_GPIO_TogglePin(PC3_harry_GPIO_Port, PC3_harry_Pin);
+      if (i==20){
+        HAL_GPIO_TogglePin(PC0_harry_GPIO_Port, PC0_harry_Pin);
+        HAL_GPIO_TogglePin(PC0_harry_GPIO_Port, PC0_harry_Pin);
+      }
+    }
+}
+
+void LED_500ms(){
+    int i=0;
+    while (i<4) {
+      Delay_50ms(10);
+      i++;
+      HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+      HAL_GPIO_TogglePin(PC3_harry_GPIO_Port, PC3_harry_Pin);
+    }
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  if(GPIO_Pin == Switch_interrupt_harry_Pin){
+  if(GPIO_Pin == PC13_harry_Pin){
     PC13_Counter++;
-    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+    HAL_GPIO_TogglePin(PC1_harry_GPIO_Port, PC1_harry_Pin);
+    // Delay_50ms(5);
+    // HAL_GPIO_TogglePin(PC0_harry_GPIO_Port, PC0_harry_Pin);
+
+  }
+
+  if(GPIO_Pin == PC8_harry_Pin){
+    LED_250ms();
+  }
+
+  if(GPIO_Pin == PB1_harry_Pin){
+    LED_500ms();
   }
 }
 /* USER CODE END 4 */
