@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f1xx_hal_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -220,7 +219,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  if(GPIO_Pin == Switch_interrupt_harry_Pin){
+  if(GPIO_Pin == ext_interrupt_harry_Pin){
     PC13_Counter++;
     HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
   }
