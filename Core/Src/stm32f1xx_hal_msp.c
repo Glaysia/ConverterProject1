@@ -20,6 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32_hal_legacy.h"
+#include "stm32f1xx_hal_pwr.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -64,7 +66,7 @@ void HAL_MspInit(void)
 {
 
   /* USER CODE BEGIN MspInit 0 */
-
+  PWR_PVDTypeDef sConfigPVD_HARRY;
   /* USER CODE END MspInit 0 */
 
   __HAL_RCC_AFIO_CLK_ENABLE();
@@ -82,6 +84,13 @@ void HAL_MspInit(void)
   __HAL_AFIO_REMAP_SWJ_NOJTAG();
 
   /* USER CODE BEGIN MspInit 1 */
+  /* Configure PVD Level to 7*/
+  sConfigPVD_HARRY.PVDLevel = PWR_PVDLEVEL_7;
+  sConfigPVD_HARRY.Mode = PWR_PVD_MODE_IT_FALLING;  
+  HAL_PWR_PVDConfig(&sConfigPVD_HARRY);
+
+  /* Enable PVD Output*/
+  HAL_PWR_EnablePVD();
 
   /* USER CODE END MspInit 1 */
 }
