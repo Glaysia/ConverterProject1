@@ -27,7 +27,10 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f1xx_hal.h"
+#include "stm32h5xx_hal.h"
+
+#include "stm32h5xx_nucleo.h"
+#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,31 +60,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define PC13_harry_Pin GPIO_PIN_13
-#define PC13_harry_GPIO_Port GPIOC
-#define PC13_harry_EXTI_IRQn EXTI15_10_IRQn
-#define PC0_harry_Pin GPIO_PIN_0
-#define PC0_harry_GPIO_Port GPIOC
-#define PC1_harry_Pin GPIO_PIN_1
-#define PC1_harry_GPIO_Port GPIOC
-#define PC3_harry_Pin GPIO_PIN_3
-#define PC3_harry_GPIO_Port GPIOC
-#define USART_TX_Pin GPIO_PIN_2
-#define USART_TX_GPIO_Port GPIOA
-#define USART_RX_Pin GPIO_PIN_3
-#define USART_RX_GPIO_Port GPIOA
-#define LED2_harry_Pin GPIO_PIN_5
-#define LED2_harry_GPIO_Port GPIOA
-#define PB1_harry_Pin GPIO_PIN_1
-#define PB1_harry_GPIO_Port GPIOB
-#define PB1_harry_EXTI_IRQn EXTI1_IRQn
-#define PC8_harry_Pin GPIO_PIN_8
-#define PC8_harry_GPIO_Port GPIOC
-#define PC8_harry_EXTI_IRQn EXTI9_5_IRQn
-#define TMS_Pin GPIO_PIN_13
-#define TMS_GPIO_Port GPIOA
-#define TCK_Pin GPIO_PIN_14
-#define TCK_GPIO_Port GPIOA
+#define PA9_GPIO_ANALOG_Pin GPIO_PIN_9
+#define PA9_GPIO_ANALOG_GPIO_Port GPIOA
+#define SWDIO_Pin GPIO_PIN_13
+#define SWDIO_GPIO_Port GPIOA
+#define SWCLK_Pin GPIO_PIN_14
+#define SWCLK_GPIO_Port GPIOA
+#define JTDI_Pin GPIO_PIN_15
+#define JTDI_GPIO_Port GPIOA
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 
