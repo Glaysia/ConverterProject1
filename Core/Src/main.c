@@ -43,6 +43,8 @@
 
 COM_InitTypeDef BspCOMInit;
 
+DAC_HandleTypeDef hdac1;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -51,6 +53,7 @@ COM_InitTypeDef BspCOMInit;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_DAC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -90,8 +93,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ICACHE_Init();
+  MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
-
   /* USER CODE END 2 */
 
   /* Initialize leds */
@@ -114,6 +117,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+    // HAL_GPIO_WritePin(PA9_GPIO_ANALOG_GPIO_Port, PA9_GPIO_ANALOG_Pin, GPIO_PIN_SET);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -139,7 +143,8 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_CSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_CSI;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.CSIState = RCC_CSI_ON;
   RCC_OscInitStruct.CSICalibrationValue = RCC_CSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -176,6 +181,51 @@ void SystemClock_Config(void)
   /** Configure the programming delay
   */
   __HAL_FLASH_SET_PROGRAM_DELAY(FLASH_PROGRAMMING_DELAY_2);
+}
+
+/**
+  * @brief DAC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_DAC1_Init(void)
+{
+
+  /* USER CODE BEGIN DAC1_Init 0 */
+
+  /* USER CODE END DAC1_Init 0 */
+
+  DAC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN DAC1_Init 1 */
+
+  /* USER CODE END DAC1_Init 1 */
+
+  /** DAC Initialization
+  */
+  hdac1.Instance = DAC1;
+  if (HAL_DAC_Init(&hdac1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** DAC channel OUT1 config
+  */
+  sConfig.DAC_HighFrequency = DAC_HIGH_FREQUENCY_INTERFACE_MODE_ABOVE_160MHZ;
+  sConfig.DAC_DMADoubleDataMode = DISABLE;
+  sConfig.DAC_SignedFormat = DISABLE;
+  sConfig.DAC_SampleAndHold = DAC_SAMPLEANDHOLD_DISABLE;
+  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+  sConfig.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_EXTERNAL;
+  sConfig.DAC_UserTrimming = DAC_TRIMMING_FACTORY;
+  if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN DAC1_Init 2 */
+
+  /* USER CODE END DAC1_Init 2 */
+
 }
 
 /**
@@ -223,8 +273,8 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin : PC4 */
@@ -233,70 +283,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA9_GPIO_ANALOG_Pin */
-  GPIO_InitStruct.Pin = PA9_GPIO_ANALOG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(PA9_GPIO_ANALOG_GPIO_Port, &GPIO_InitStruct);
-
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-void Delay(uint32_t Delay)
-{
-  while(Delay) {
-    Delay--;
-  }
-}
 
-void Delay_50ms(float N){
-  Delay((uint32_t)(265967*N));
-}
-
-void LED_250ms(){
-    int i=0;
-    while (i<40) {
-      Delay_50ms(5);
-      i++;
-      HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-      HAL_GPIO_TogglePin(PC3_harry_GPIO_Port, PC3_harry_Pin);
-      if (i==20){
-        HAL_GPIO_TogglePin(PC0_harry_GPIO_Port, PC0_harry_Pin);
-        HAL_GPIO_TogglePin(PC0_harry_GPIO_Port, PC0_harry_Pin);
-      }
-    }
-}
-
-void LED_500ms(){
-    int i=0;
-    while (i<4) {
-      Delay_50ms(10);
-      i++;
-      HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-      HAL_GPIO_TogglePin(PC3_harry_GPIO_Port, PC3_harry_Pin);
-    }
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  if(GPIO_Pin == PC13_harry_Pin){
-    PC13_Counter++;
-    HAL_GPIO_TogglePin(PC1_harry_GPIO_Port, PC1_harry_Pin);
-    // Delay_50ms(5);
-    // HAL_GPIO_TogglePin(PC0_harry_GPIO_Port, PC0_harry_Pin);
-
-  }
-
-  if(GPIO_Pin == PC8_harry_Pin){
-    LED_250ms();
-  }
-
-  if(GPIO_Pin == PB1_harry_Pin){
-    LED_500ms();
-  }
-}
 /* USER CODE END 4 */
 
 /**
