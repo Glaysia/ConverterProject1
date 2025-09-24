@@ -60,8 +60,11 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define A4_DAC_Pin GPIO_PIN_4
-#define A4_DAC_GPIO_Port GPIOA
+#define C13_SWITCH_Pin GPIO_PIN_13
+#define C13_SWITCH_GPIO_Port GPIOC
+#define C13_SWITCH_EXTI_IRQn EXTI13_IRQn
+#define A5_LED2_Pin GPIO_PIN_5
+#define A5_LED2_GPIO_Port GPIOA
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
