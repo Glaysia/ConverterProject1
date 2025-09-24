@@ -240,57 +240,16 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void Delay(uint32_t Delay)
-{
-  while(Delay) {
-    Delay--;
-  }
-}
-
-void Delay_50ms(float N){
-  Delay((uint32_t)(265967*N));
-}
-
-void LED_250ms(){
-    int i=0;
-    while (i<40) {
-      Delay_50ms(5);
-      i++;
-      HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-      HAL_GPIO_TogglePin(PC3_harry_GPIO_Port, PC3_harry_Pin);
-      if (i==20){
-        HAL_GPIO_TogglePin(PC0_harry_GPIO_Port, PC0_harry_Pin);
-        HAL_GPIO_TogglePin(PC0_harry_GPIO_Port, PC0_harry_Pin);
-      }
-    }
-}
-
-void LED_500ms(){
-    int i=0;
-    while (i<4) {
-      Delay_50ms(10);
-      i++;
-      HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-      HAL_GPIO_TogglePin(PC3_harry_GPIO_Port, PC3_harry_Pin);
-    }
-}
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   if(GPIO_Pin == PC13_harry_Pin){
     PC13_Counter++;
-    HAL_GPIO_TogglePin(PC1_harry_GPIO_Port, PC1_harry_Pin);
+    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
     // Delay_50ms(5);
     // HAL_GPIO_TogglePin(PC0_harry_GPIO_Port, PC0_harry_Pin);
 
   }
 
-  if(GPIO_Pin == PC8_harry_Pin){
-    LED_250ms();
-  }
-
-  if(GPIO_Pin == PB1_harry_Pin){
-    LED_500ms();
-  }
 }
 /* USER CODE END 4 */
 
