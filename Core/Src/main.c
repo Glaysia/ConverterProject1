@@ -47,7 +47,10 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+uint16_t PC13_Counter=0;
+uint32_t Tim1Cnt=40000;
+uint32_t Tim2Cnt=40000;
+uint32_t Tim3Cnt=40000;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -109,6 +112,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	// Tim1Cnt++;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -174,12 +178,12 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 6000-1;
-  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 6-1;
+  htim1.Init.Prescaler = 3000-1;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+  htim1.Init.Period = 500-1;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
@@ -222,9 +226,9 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 3000-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
-  htim2.Init.Period = 13-1;
+  htim2.Init.Period = 500-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -265,11 +269,11 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 30000-1;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 60-1;
+  htim3.Init.Prescaler = 3000-1;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
+  htim3.Init.Period = 500-1;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -343,22 +347,23 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(PB10_TIM3_HARRY_GPIO_Port, PB10_TIM3_HARRY_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED2_harry_Pin|PA8_TIM2_HARRY_Pin|PA9_TIM1_HARRY_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, PA8_TIM2_HARRY_Pin|PA9_TIM1_HARRY_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(PB10_TIM3_HARRY_GPIO_Port, PB10_TIM3_HARRY_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  /*Configure GPIO pin : PC13_Pin */
+  GPIO_InitStruct.Pin = PC13_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(PC13_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LED2_harry_Pin PA8_TIM2_HARRY_Pin PA9_TIM1_HARRY_Pin */
+  GPIO_InitStruct.Pin = LED2_harry_Pin|PA8_TIM2_HARRY_Pin|PA9_TIM1_HARRY_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LED2_harry_Pin */
-  GPIO_InitStruct.Pin = LED2_harry_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(LED2_harry_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB10_TIM3_HARRY_Pin */
   GPIO_InitStruct.Pin = PB10_TIM3_HARRY_Pin;
@@ -367,16 +372,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(PB10_TIM3_HARRY_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA8_TIM2_HARRY_Pin PA9_TIM1_HARRY_Pin */
-  GPIO_InitStruct.Pin = PA8_TIM2_HARRY_Pin|PA9_TIM1_HARRY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -384,6 +382,20 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+  if(GPIO_Pin==PC13_Pin){
+    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+    PC13_Counter++;
+    __HAL_TIM_SET_PRESCALER(&htim1, (Tim1Cnt)-1);
+    __HAL_TIM_SET_PRESCALER(&htim2, (Tim2Cnt)-1);
+    __HAL_TIM_SET_PRESCALER(&htim3, (Tim3Cnt)-1);
+
+
+  }
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   if(htim->Instance==TIM1){ //1ms
     HAL_GPIO_TogglePin(PA9_TIM1_HARRY_GPIO_Port, PA9_TIM1_HARRY_Pin);
