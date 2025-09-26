@@ -58,6 +58,10 @@
             "serverArgs": [
                 "-m","0",
             ],
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 8
+            }
             /* If you use external loader, add additional arguments */
             //"serverArgs": ["--extload", "path/to/ext/loader.stldr"],
         }
