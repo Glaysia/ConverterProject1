@@ -48,9 +48,9 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 uint16_t PC13_Counter=0;
-uint32_t Tim1Cnt=40000;
-uint32_t Tim2Cnt=40000;
-uint32_t Tim3Cnt=40000;
+uint32_t Tim1Cnt=400;
+uint32_t Tim2Cnt=500;
+uint32_t Tim3Cnt=600;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -66,6 +66,79 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+static uint32_t TimerGetClock(const TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance == TIM1)
+  {
+    uint32_t pclk = HAL_RCC_GetPCLK2Freq();
+    if ((RCC->CFGR & RCC_CFGR_PPRE2) != RCC_CFGR_PPRE2_DIV1)
+    {
+      pclk *= 2U;
+    }
+    return pclk;
+  }
+
+  uint32_t pclk = HAL_RCC_GetPCLK1Freq();
+  if ((RCC->CFGR & RCC_CFGR_PPRE1) != RCC_CFGR_PPRE1_DIV1)
+  {
+    pclk *= 2U;
+  }
+  return pclk;
+}
+
+static void TimerUpdatePeriodMs(TIM_HandleTypeDef *htim, uint32_t period_ms)
+{
+  if (period_ms == 0U)
+  {
+    return;
+  }
+
+  uint32_t timer_clk = TimerGetClock(htim);
+  uint32_t counter_factor = 1U;
+
+  if (htim->Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED1 ||
+      htim->Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED2 ||
+      htim->Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED3)
+  {
+    counter_factor = 2U;
+  }
+
+  uint64_t total_ticks = ((uint64_t)timer_clk * (uint64_t)period_ms) / (1000ULL * counter_factor);
+  if (total_ticks < 2ULL)
+  {
+    total_ticks = 2ULL;
+  }
+
+  uint64_t prescaler = (total_ticks + 0xFFFFULL) / 0x10000ULL;
+  if (prescaler == 0ULL)
+  {
+    prescaler = 1ULL;
+  }
+  if (prescaler > 0x10000ULL)
+  {
+    prescaler = 0x10000ULL;
+  }
+
+  uint64_t arr = total_ticks / prescaler;
+  if (arr == 0ULL)
+  {
+    arr = 1ULL;
+  }
+  if (arr > 0x10000ULL)
+  {
+    arr = 0x10000ULL;
+  }
+
+  uint32_t psc_reg = (uint32_t)(prescaler - 1ULL);
+  uint32_t arr_reg = (uint32_t)(arr - 1ULL);
+
+  HAL_TIM_Base_Stop_IT(htim);
+  __HAL_TIM_SET_PRESCALER(htim, psc_reg);
+  __HAL_TIM_SET_AUTORELOAD(htim, arr_reg);
+  __HAL_TIM_SET_COUNTER(htim, 0U);
+  HAL_TIM_Base_Start_IT(htim);
+}
 
 /* USER CODE END 0 */
 
@@ -388,10 +461,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   if(GPIO_Pin==PC13_Pin){
     HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
     PC13_Counter++;
-    __HAL_TIM_SET_PRESCALER(&htim1, (Tim1Cnt)-1);
-    __HAL_TIM_SET_PRESCALER(&htim2, (Tim2Cnt)-1);
-    __HAL_TIM_SET_PRESCALER(&htim3, (Tim3Cnt)-1);
-
+    TimerUpdatePeriodMs(&htim1, Tim1Cnt);
+    TimerUpdatePeriodMs(&htim2, Tim2Cnt);
+    TimerUpdatePeriodMs(&htim3, Tim3Cnt);
 
   }
 }
