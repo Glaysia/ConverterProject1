@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdint.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -46,6 +47,13 @@ TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart2;
 
+uint8_t Tim1Cnt=0;
+uint8_t Tim2Cnt=0;
+uint8_t Tim3Cnt=0;
+
+uint8_t Tim1PeriodScaler=1;
+uint8_t Tim2PeriodScaler=1;
+uint8_t Tim3PeriodScaler=1;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -80,6 +88,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+
   HAL_Init();
 
   /* USER CODE BEGIN Init */
@@ -386,13 +395,25 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   if(htim->Instance==TIM1){ //1ms
-    HAL_GPIO_TogglePin(PA9_TIM1_HARRY_GPIO_Port, PA9_TIM1_HARRY_Pin);
+    Tim1Cnt++;
+    if(Tim1Cnt>Tim1PeriodScaler-1){
+      HAL_GPIO_TogglePin(PA9_TIM1_HARRY_GPIO_Port, PA9_TIM1_HARRY_Pin);
+      Tim1Cnt = 0;  
+    }
   }
   if(htim->Instance==TIM2){ // 2ms
-    HAL_GPIO_TogglePin(PA8_TIM2_HARRY_GPIO_Port, PA8_TIM2_HARRY_Pin);
+    Tim2Cnt++;
+    if(Tim2Cnt>Tim2PeriodScaler-1){
+      HAL_GPIO_TogglePin(PA8_TIM2_HARRY_GPIO_Port, PA8_TIM2_HARRY_Pin);
+      Tim2Cnt = 0;  
+    }
   }
   if(htim->Instance==TIM3){ // 100ms
-    HAL_GPIO_TogglePin(PB10_TIM3_HARRY_GPIO_Port, PB10_TIM3_HARRY_Pin);
+    Tim3Cnt++;
+    if(Tim3Cnt>Tim3PeriodScaler-1){
+      HAL_GPIO_TogglePin(PB10_TIM3_HARRY_GPIO_Port, PB10_TIM3_HARRY_Pin);
+      Tim3Cnt = 0;  
+    }
   }                                                           
 }
 /* USER CODE END 4 */
