@@ -222,6 +222,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(A4_TEST_GPIO_Port, A4_TEST_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(A5_LED2_GPIO_Port, A5_LED2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : C13_SWITCH_Pin */
@@ -229,6 +232,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(C13_SWITCH_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : A4_TEST_Pin */
+  GPIO_InitStruct.Pin = A4_TEST_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(A4_TEST_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : A5_LED2_Pin */
   GPIO_InitStruct.Pin = A5_LED2_Pin;
@@ -257,6 +267,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
   if (GPIO_Pin == C13_SWITCH_Pin) {
     PC13_Counter++;
     HAL_GPIO_TogglePin(A5_LED2_GPIO_Port, A5_LED2_Pin);
+    HAL_GPIO_TogglePin(A4_TEST_GPIO_Port, A4_TEST_Pin);
     printf("PC13 Pressed %d times\r\n", PC13_Counter);
   }
 }

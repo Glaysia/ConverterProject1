@@ -63,6 +63,8 @@ void Error_Handler(void);
 #define C13_SWITCH_Pin GPIO_PIN_13
 #define C13_SWITCH_GPIO_Port GPIOC
 #define C13_SWITCH_EXTI_IRQn EXTI13_IRQn
+#define A4_TEST_Pin GPIO_PIN_4
+#define A4_TEST_GPIO_Port GPIOA
 #define A5_LED2_Pin GPIO_PIN_5
 #define A5_LED2_GPIO_Port GPIOA
 #define SWDIO_Pin GPIO_PIN_13
