@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stddef.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -46,7 +47,9 @@ COM_InitTypeDef BspCOMInit;
 TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
-
+uint32_t g_tim1_pwm_frequency_khz = 100U;  /* Default PWM frequency in kHz */
+uint32_t g_tim1_pwm_duty_percent = 50U;    /* Duty cycle in percent */
+uint32_t g_tim1_deadtime_percent = 5U;     /* Dead-time as percentage of period */
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -55,7 +58,8 @@ static void MX_GPIO_Init(void);
 static void MX_ICACHE_Init(void);
 static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
-
+static uint32_t TIM1_GetTimerClockHz(void);
+static void TIM1_UpdateOutputWaveform(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -95,6 +99,7 @@ int main(void)
   MX_ICACHE_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+  TIM1_UpdateOutputWaveform();
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   /* USER CODE END 2 */
@@ -351,12 +356,131 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static uint32_t TIM1_GetTimerClockHz(void)
+{
+  RCC_ClkInitTypeDef clk_config = {0};
+  uint32_t flash_latency = 0;
+
+  HAL_RCC_GetClockConfig(&clk_config, &flash_latency);
+
+  uint32_t pclk2 = HAL_RCC_GetPCLK2Freq();
+  if (pclk2 == 0U)
+  {
+    return 0U;
+  }
+
+  return (clk_config.APB2CLKDivider == RCC_HCLK_DIV1) ? pclk2 : (pclk2 * 2U);
+}
+
+static void TIM1_UpdateOutputWaveform(void)
+{
+  uint32_t timer_clk_hz = TIM1_GetTimerClockHz();
+  if (timer_clk_hz == 0U)
+  {
+    return;
+  }
+
+  uint32_t target_freq_hz = g_tim1_pwm_frequency_khz * 1000U;
+  if (target_freq_hz == 0U)
+  {
+    return;
+  }
+
+  uint32_t prescaler = htim1.Init.Prescaler + 1U;
+  uint32_t counter_mode = htim1.Init.CounterMode;
+  uint32_t counter_factor =
+      ((counter_mode == TIM_COUNTERMODE_CENTERALIGNED1) ||
+       (counter_mode == TIM_COUNTERMODE_CENTERALIGNED2) ||
+       (counter_mode == TIM_COUNTERMODE_CENTERALIGNED3)) ? 2U : 1U;
+
+  uint64_t denominator = (uint64_t)counter_factor * (uint64_t)prescaler * (uint64_t)target_freq_hz;
+  if (denominator == 0ULL)
+  {
+    return;
+  }
+
+  uint64_t arr_plus_one = ((uint64_t)timer_clk_hz + (denominator / 2ULL)) / denominator;
+  if (arr_plus_one == 0ULL)
+  {
+    arr_plus_one = 1ULL;
+  }
+
+  uint64_t arr_value = arr_plus_one - 1ULL;
+  if (arr_value > 0xFFFFULL)
+  {
+    arr_value = 0xFFFFULL;
+  }
+
+  uint32_t was_enabled = (htim1.Instance->CR1 & TIM_CR1_CEN);
+  if (was_enabled != 0U)
+  {
+    __HAL_TIM_DISABLE(&htim1);
+  }
+
+  __HAL_TIM_SET_AUTORELOAD(&htim1, (uint32_t)arr_value);
+  htim1.Init.Period = (uint32_t)arr_value;
+
+  uint32_t duty_percent = (g_tim1_pwm_duty_percent > 100U) ? 100U : g_tim1_pwm_duty_percent;
+  uint64_t pulse = ((arr_value + 1ULL) * duty_percent) / 100ULL;
+  if (pulse > arr_value)
+  {
+    pulse = arr_value;
+  }
+
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, (uint32_t)pulse);
+
+  uint32_t deadtime_percent = (g_tim1_deadtime_percent > 100U) ? 100U : g_tim1_deadtime_percent;
+  uint64_t deadtime_ticks = ((arr_value + 1ULL) * deadtime_percent) / 100ULL;
+  if (deadtime_ticks > 0xFFULL)
+  {
+    deadtime_ticks = 0xFFULL;
+  }
+
+  uint32_t bdtr = htim1.Instance->BDTR;
+  bdtr &= ~TIM_BDTR_DTG;
+  bdtr |= (uint32_t)deadtime_ticks;
+  htim1.Instance->BDTR = bdtr;
+
+  if (was_enabled != 0U)
+  {
+    __HAL_TIM_SET_COUNTER(&htim1, 0U);
+    __HAL_TIM_ENABLE(&htim1);
+    htim1.Instance->EGR |= TIM_EGR_UG;
+  }
+}
+
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
   if (GPIO_Pin == C13_SWITCH_Pin) {
     PC13_Counter++;
     HAL_GPIO_TogglePin(A5_LED2_GPIO_Port, A5_LED2_Pin);
     HAL_GPIO_TogglePin(A4_TEST_GPIO_Port, A4_TEST_Pin);
-    printf("PC13 Pressed %d times\r\n", PC13_Counter);
+    // static size_t preset_index = 0U;
+    // static const struct {
+    //   uint32_t freq_khz;
+    //   uint32_t duty_percent;
+    //   uint32_t deadtime_percent;
+    // } presets[] = {
+    //   {100U, 40U, 5U},
+    //   {150U, 60U, 3U},
+    //   {6780U, 35U, 1U},
+    //   {500U, 50U, 7U}
+    // };
+
+    // preset_index = (preset_index + 1U) % (sizeof(presets) / sizeof(presets[0]));
+
+    // g_tim1_pwm_frequency_khz = presets[preset_index].freq_khz;
+    // g_tim1_pwm_duty_percent = presets[preset_index].duty_percent;
+    // g_tim1_deadtime_percent = presets[preset_index].deadtime_percent;
+    g_tim1_pwm_frequency_khz = 100u;
+    g_tim1_pwm_duty_percent = 50u;
+    g_tim1_deadtime_percent = 5u;
+    TIM1_UpdateOutputWaveform();
+
+    printf("PC13 Pressed %d times -> %lu kHz @ %lu%%, dead %lu%%\r\n",
+           PC13_Counter,
+           (unsigned long)g_tim1_pwm_frequency_khz,
+           (unsigned long)g_tim1_pwm_duty_percent,
+           (unsigned long)g_tim1_deadtime_percent);
   }
 }
 /* USER CODE END 4 */
