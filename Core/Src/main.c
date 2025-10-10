@@ -18,9 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f1xx_hal.h"
-#include "stm32f1xx_hal_gpio.h"
-#include "stm32f1xx_hal_iwdg.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -39,7 +36,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define kick_ms 1000
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -52,10 +49,7 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint16_t PC13_Counter=0;
-uint32_t Tim1Cnt=400;
-uint32_t Tim2Cnt=500;
-uint32_t Tim3Cnt=600;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,93 +67,6 @@ static void MX_IWDG_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-static uint32_t TimerGetClock(const TIM_HandleTypeDef *htim)
-{
-  if (htim->Instance == TIM1)
-  {
-    uint32_t pclk = HAL_RCC_GetPCLK2Freq();
-    if ((RCC->CFGR & RCC_CFGR_PPRE2) != RCC_CFGR_PPRE2_DIV1)
-    {
-      pclk *= 2U;
-    }
-    return pclk;
-  }
-
-  uint32_t pclk = HAL_RCC_GetPCLK1Freq();
-  if ((RCC->CFGR & RCC_CFGR_PPRE1) != RCC_CFGR_PPRE1_DIV1)
-  {
-    pclk *= 2U;
-  }
-  return pclk;
-}
-
-static void TimerUpdatePeriodMs(TIM_HandleTypeDef *htim, uint32_t period_ms)
-{
-  if (period_ms == 0U)
-  {
-    return;
-  }
-
-  uint32_t timer_clk = TimerGetClock(htim);
-  uint32_t counter_factor = 1U;
-
-  if (htim->Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED1 ||
-      htim->Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED2 ||
-      htim->Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED3)
-  {
-    counter_factor = 2U;
-  }
-
-  uint64_t total_ticks = ((uint64_t)timer_clk * (uint64_t)period_ms) / (1000ULL * counter_factor);
-  if (total_ticks < 2ULL)
-  {
-    total_ticks = 2ULL;
-  }
-
-  uint64_t prescaler = (total_ticks + 0xFFFFULL) / 0x10000ULL;
-  if (prescaler == 0ULL)
-  {
-    prescaler = 1ULL;
-  }
-  if (prescaler > 0x10000ULL)
-  {
-    prescaler = 0x10000ULL;
-  }
-
-  uint64_t arr = total_ticks / prescaler;
-  if (arr == 0ULL)
-  {
-    arr = 1ULL;
-  }
-  if (arr > 0x10000ULL)
-  {
-    arr = 0x10000ULL;
-  }
-
-  uint32_t psc_reg = (uint32_t)(prescaler - 1ULL);
-  uint32_t arr_reg = (uint32_t)(arr - 1ULL);
-
-  HAL_TIM_Base_Stop_IT(htim);
-  __HAL_TIM_SET_PRESCALER(htim, psc_reg);
-  __HAL_TIM_SET_AUTORELOAD(htim, arr_reg);
-  __HAL_TIM_SET_COUNTER(htim, 0U);
-  HAL_TIM_Base_Start_IT(htim);
-}
-
-static void Blink(uint8_t n, uint32_t ms){
-  for(uint8_t i=0;i<n;i++){
-    HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_SET);
-    HAL_Delay(ms);
-    HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_RESET);
-    HAL_Delay(ms);
-  }
-}
-
-static void ShowResetCause(){
-  if(__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)) Blink(3,100);
-  else Blink(1,200);
-  __HAL_RCC_CLEAR_RESET_FLAGS();
-}
 /* USER CODE END 0 */
 
 /**
@@ -198,32 +105,12 @@ int main(void)
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_TIM_Base_Start_IT(&htim1);
-  HAL_TIM_Base_Start_IT(&htim2);
-  HAL_TIM_Base_Start_IT(&htim3);
-
-  uint32_t last = HAL_GetTick();
-  // const uint32_t kick_ms = 1000; macro defined
-  ShowResetCause();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  // for(int i=0; i<5; i++){    Blink(1,500);}
-
   while (1)
   {
-	  Blink(1, 500);
-    
-    if(HAL_GetTick() - last >= kick_ms){
-      HAL_IWDG_Refresh(&hiwdg);
-      last += kick_ms;
-    }
-
-    if(HAL_GPIO_ReadPin(PC13_GPIO_Port,PC13_Pin))
-      while(1){;}
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -313,17 +200,19 @@ static void MX_TIM1_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
   /* USER CODE BEGIN TIM1_Init 1 */
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 3000-1;
-  htim1.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
-  htim1.Init.Period = 13-1;
+  htim1.Init.Prescaler = 8000-1;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 100-1;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
@@ -333,15 +222,47 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 90;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
+  HAL_TIM_MspPostInit(&htim1);
 
 }
 
@@ -364,11 +285,11 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 3000-1;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
-  htim2.Init.Period = 13-1;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 65535;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -409,11 +330,11 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 3000-1;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
-  htim3.Init.Period = 13-1;
+  htim3.Init.Prescaler = 0;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 65535;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -487,10 +408,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LED2_harry_Pin|PA8_TIM2_HARRY_Pin|PA9_TIM1_HARRY_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(PB10_TIM3_HARRY_GPIO_Port, PB10_TIM3_HARRY_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PC13_Pin */
   GPIO_InitStruct.Pin = PC13_Pin;
@@ -498,19 +416,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(PC13_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED2_harry_Pin PA8_TIM2_HARRY_Pin PA9_TIM1_HARRY_Pin */
-  GPIO_InitStruct.Pin = LED2_harry_Pin|PA8_TIM2_HARRY_Pin|PA9_TIM1_HARRY_Pin;
+  /*Configure GPIO pin : LED2_harry_Pin */
+  GPIO_InitStruct.Pin = LED2_harry_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PB10_TIM3_HARRY_Pin */
-  GPIO_InitStruct.Pin = PB10_TIM3_HARRY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(PB10_TIM3_HARRY_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED2_harry_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
@@ -523,29 +434,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  if(GPIO_Pin==PC13_Pin){
-    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-    PC13_Counter++;
-    TimerUpdatePeriodMs(&htim1, Tim1Cnt);
-    TimerUpdatePeriodMs(&htim2, Tim2Cnt);
-    TimerUpdatePeriodMs(&htim3, Tim3Cnt);
-
-  }
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-  if(htim->Instance==TIM1){ //1ms
-    HAL_GPIO_TogglePin(PA9_TIM1_HARRY_GPIO_Port, PA9_TIM1_HARRY_Pin);
-  }
-  if(htim->Instance==TIM2){ // 2ms
-    HAL_GPIO_TogglePin(PA8_TIM2_HARRY_GPIO_Port, PA8_TIM2_HARRY_Pin);
-  }
-  if(htim->Instance==TIM3){ // 100ms
-    HAL_GPIO_TogglePin(PB10_TIM3_HARRY_GPIO_Port, PB10_TIM3_HARRY_Pin);
-  }                                                           
-}
 /* USER CODE END 4 */
 
 /**
