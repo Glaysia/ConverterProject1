@@ -55,7 +55,10 @@ const struct {
   .Kt = 0.1f,  .Ke = 0.1f,
   .J = 0.01f,  .B = 0.1f
 };
-float Va = 56.0f;
+float Ia_ref = 1.0f;
+
+
+float Va = 12.0f;
 float Ia = 0.0f;
 float wm = 0.0f;
 const float T = 0.001f;
@@ -92,8 +95,23 @@ void first_sum(void){
   second_sum(sum1);
 }
 
+
+const float Kp = 2*3.14159*100*e1.L;
+const float Ki = 2*3.14159*100*e1.R;
+
+float I_error = 0.0f; 
+void Ia_ref_control(void){
+  float sum = Ia_ref - Ia;
+
+  float tmp1 = Kp*sum;
+  I_error += sum*T;
+  float tmp2 = Ki*I_error;
+
+  Va = tmp1 + tmp2;
+  first_sum();
+}
 /* USER CODE END 0 */
-Ia
+
 /**
   * @brief  The application entry point.
   * @retval int
@@ -328,7 +346,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   if (htim->Instance==TIM1){
     count++;
     HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-    first_sum();
+    // first_sum();
+    Ia_ref_control();
   }
 }
 
