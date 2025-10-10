@@ -47,6 +47,7 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+uint16_t DutyR=100-1;
 
 /* USER CODE END PV */
 
@@ -102,6 +103,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+
+  HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -402,6 +405,20 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+  if(htim->Instance == TIM2){
+    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port,LED2_harry_Pin);
+    HAL_GPIO_TogglePin(GPIO_CN9D2_GPIO_Port,GPIO_CN9D2_Pin);
+
+    TIM1->CCR1 = DutyR;
+    TIM1->CCR2 = DutyR;
+    if(DutyR%100 !=0)
+      DutyR++;
+    else
+      DutyR=1;
+
+  }
+}
 /* USER CODE END 4 */
 
 /**
