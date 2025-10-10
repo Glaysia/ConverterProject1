@@ -45,7 +45,20 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+uint16_t count = 0;
+const struct {
+  float L;  float R;
+  float Kt;  float Ke;
+  float J;  float B;
+} e1 = {
+  .L = 0.001f, .R = 1.0f,
+  .Kt = 0.1f,  .Ke = 0.1f,
+  .J = 0.01f,  .B = 0.1f
+};
+float Va = 56.0f;
+float Ia = 0.0f;
+float wm = 0.0f;
+const float T = 0.001f;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,9 +72,28 @@ static void MX_TIM1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void third_sum(void){
+  float sum3;
+  sum3 = (1/e1.J)*(e1.Kt*Ia - e1.B*wm);
+  wm += sum3*T;
+}
+
+void second_sum(float sum1){
+  float sum2;
+  sum2 = (1/e1.L)*(sum1 - e1.R*Ia);
+  Ia += sum2*T;
+  third_sum();
+}
+
+void first_sum(void){
+  float sum1;
+
+  sum1 = Va-e1.Ke*wm;
+  second_sum(sum1);
+}
 
 /* USER CODE END 0 */
-
+Ia
 /**
   * @brief  The application entry point.
   * @retval int
@@ -294,7 +326,15 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   if (htim->Instance==TIM1){
+    count++;
     HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+    first_sum();
+  }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+  if (GPIO_Pin==PC13_Pin){
+    count = 0;
   }
 }
 /* USER CODE END 4 */
