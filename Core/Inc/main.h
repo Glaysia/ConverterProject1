@@ -68,12 +68,6 @@ void Error_Handler(void);
 #define USART_RX_GPIO_Port GPIOA
 #define LED2_harry_Pin GPIO_PIN_5
 #define LED2_harry_GPIO_Port GPIOA
-#define PWM_CH1_CN9D7_Pin GPIO_PIN_8
-#define PWM_CH1_CN9D7_GPIO_Port GPIOA
-#define PWM_CH2_CN9D8_Pin GPIO_PIN_9
-#define PWM_CH2_CN9D8_GPIO_Port GPIOA
-#define GPIO_CN9D2_Pin GPIO_PIN_10
-#define GPIO_CN9D2_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
