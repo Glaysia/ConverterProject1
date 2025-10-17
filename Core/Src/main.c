@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f1xx_hal_adc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -49,12 +50,11 @@ TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
 uint32_t Counter_pc13 = 0;
-uint32_t Counter_1ms = 0;
+uint32_t Counter_100us = 0;
 uint32_t Counter_17ms = 0;
-uint16_t adc_buffer[ADC_CHANNEL_NUMBER];
-uint16_t adc_data[ADC_BUFFER_LENGTH][ADC_CHANNEL_NUMBER];
-bool Flag_adc = false;
-bool isCompleted_Sequence = false;
+uint16_t adc_data[ADC_BUFFER_LENGTH];
+// bool Flag_adc = false;
+// bool isCompleted_Sequence = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,18 +115,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if(Counter_17ms==1){
-      HAL_GPIO_WritePin(GPIO_CN9D2_GPIO_Port, GPIO_CN9D2_Pin, GPIO_PIN_SET);
-      HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, ADC_BUFFER_LENGTH);
-    }else{
-      if(Counter_17ms>18 && Flag_adc){
-        Flag_adc = false;
-        HAL_GPIO_WritePin(GPIO_CN9D2_GPIO_Port, GPIO_CN9D2_Pin, GPIO_PIN_RESET);
-        HAL_ADC_Stop_DMA(&hadc1);
-      }else{
-        if(!Flag_adc) Counter_17ms = 0;
-      }
-    }
 
     /* USER CODE END WHILE */
 
@@ -202,12 +190,12 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 3;
+  hadc1.Init.NbrOfConversion = 1;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -218,22 +206,6 @@ static void MX_ADC1_Init(void)
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_2;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Rank = ADC_REGULAR_RANK_3;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -357,33 +329,34 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 uint16_t idx = 0;
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
-  isCompleted_Sequence = true;
+// void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
+//   isCompleted_Sequence = true;
 
-  if(hadc->Instance == hadc1.Instance){
-    adc_data[0][idx] = adc_buffer[0];
-    adc_data[1][idx] = adc_buffer[1];
-    adc_data[2][idx] = adc_buffer[2];
-    idx++;
-    idx%=ADC_BUFFER_LENGTH;
-  }
-}
+//   if(hadc->Instance == hadc1.Instance){
+//     adc_data[0][idx] = adc_buffer[0];
+//     adc_data[1][idx] = adc_buffer[1];
+//     adc_data[2][idx] = adc_buffer[2];
+//     idx++;
+//     idx%=ADC_BUFFER_LENGTH;
+//   }
+// }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  uint16_t out_data_a=0;
-  uint16_t out_data_b=0;
   if (htim->Instance == TIM1) {
-    out_data_a = adc_data[0][Counter_1ms];
-    out_data_b = adc_data[1][Counter_1ms];
-    
-    // HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
     // HAL_GPIO_TogglePin(GPIO_CN9D2_GPIO_Port,GPIO_CN9D2_Pin);
-    Counter_1ms++;
-    Counter_1ms%=100;
+    Counter_100us++;
+    HAL_ADC_Start_IT(&hadc1);
 
-    if(Flag_adc){
-      Counter_17ms++;
+  }
+}
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+  if (hadc->Instance == ADC1) {
+    adc_data[idx] = HAL_ADC_GetValue(hadc);
+    idx++;
+    if (idx >= ADC_BUFFER_LENGTH) {
+      idx = 0;
     }
   }
 }
