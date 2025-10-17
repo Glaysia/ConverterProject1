@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f1xx_hal_adc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -33,7 +32,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define ADC_CHANNEL_NUMBER 3
-#define ADC_BUFFER_LENGTH 2048
+#define ADC_BUFFER_LENGTH 512
 
 /* USER CODE END PD */
 
@@ -52,7 +51,7 @@ TIM_HandleTypeDef htim1;
 uint32_t Counter_pc13 = 0;
 uint32_t Counter_100us = 0;
 uint32_t Counter_17ms = 0;
-uint16_t adc_data[ADC_BUFFER_LENGTH];
+__IO uint16_t adc_data[ADC_BUFFER_LENGTH];
 // bool Flag_adc = false;
 // bool isCompleted_Sequence = false;
 /* USER CODE END PV */
@@ -319,7 +318,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -328,7 +327,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-uint16_t idx = 0;
+__IO uint16_t idx = 0;
 // void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
 //   isCompleted_Sequence = true;
 
@@ -344,7 +343,7 @@ uint16_t idx = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM1) {
-    // HAL_GPIO_TogglePin(GPIO_CN9D2_GPIO_Port,GPIO_CN9D2_Pin);
+    HAL_GPIO_TogglePin(GPIO_CN9D2_GPIO_Port,GPIO_CN9D2_Pin);
     Counter_100us++;
     HAL_ADC_Start_IT(&hadc1);
 
