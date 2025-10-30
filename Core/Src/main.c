@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32h5xx_hal_adc.h"
+#include "stm32h5xx_hal_dac.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -77,8 +78,8 @@ uint16_t PWM_Counter = 0;
 uint16_t DAC_Counter = 0;
 uint16_t dac_value = 0;
 static volatile uint16_t g_adc_last = 0; /* Updated in ADC IRQ */
-static uint32_t g_tim1_pwm_freq_hz = 100U; /* Start target at 10000 Hz */
-static bool enable_printf = true;
+static uint32_t g_tim1_pwm_freq_hz = 500U; /* Start target at 500 Hz */
+static bool enable_printf = false;
 /* USER CODE END 0 */
 
 /**
@@ -467,22 +468,24 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
   if (hadc->Instance == ADC1)
   {
     g_adc_last = (uint16_t)HAL_ADC_GetValue(hadc);
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, g_adc_last);
   }
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   if(htim->Instance == TIM1){
+    HAL_ADC_Start_IT(&hadc1);
     PWM_Counter++;
-    if (PWM_Counter >= 160) {
-      DAC_Counter++;
-      dac_value = (uint16_t)(2010 + 2000 * sinf(2.0f * 3.14159f * ((float)DAC_Counter) / 160.0f));
-      HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac_value);
-    }
+    // if (PWM_Counter >= 160) {
+    //   DAC_Counter++;
+    //   dac_value = (uint16_t)(2010 + 2000 * sinf(2.0f * 3.14159f * ((float)DAC_Counter) / 160.0f));
+    //   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac_value);
+    // }
 
-    if(enable_printf){
-      HAL_ADC_Start_IT(&hadc1);
-      printf("ADC=%u\r\n", (unsigned)g_adc_last);
-    }
+    // if(enable_printf){
+    //   HAL_ADC_Start_IT(&hadc1);
+    //   printf("ADC=%u\r\n", (unsigned)g_adc_last);
+    // }
   }
 }
 
@@ -490,8 +493,8 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
   if (GPIO_Pin == C13_SWITCH_Pin) {
     PC13_Counter++;
     /* Increase PWM frequency by 10 Hz each press (approximate achievable) */
-    g_tim1_pwm_freq_hz += 100U;
-    TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
+    // g_tim1_pwm_freq_hz += 100U;
+    // TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
 
     // enable_printf = !enable_printf;
   }
