@@ -65,7 +65,8 @@ static void MX_TIM1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_DAC1_Init(void);
 /* USER CODE BEGIN PFP */
-
+static uint32_t TIM1_GetTimerClockHz(void);
+static void TIM1_SetFrequencyHz(uint32_t freq_hz);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -73,6 +74,7 @@ static void MX_DAC1_Init(void);
 uint16_t PC13_Counter = 0;
 uint16_t PWM_Counter = 0;
 uint16_t dac_value = 0;
+static uint32_t g_tim1_pwm_freq_hz = 10U; /* Start target at 10 Hz */
 /* USER CODE END 0 */
 
 /**
@@ -113,9 +115,11 @@ int main(void)
   if (HAL_DAC_Start(&hdac1, DAC_CHANNEL_2) == HAL_OK) {
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
   }
+  /* Ensure TIM1 starts at 10 Hz initially */
+  TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-  // HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+
   /* USER CODE END 2 */
 
   /* Initialize COM1 port (115200, 8 bits (7-bit data + 1 stop bit), no parity */
@@ -463,39 +467,55 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
   if (GPIO_Pin == C13_SWITCH_Pin) {
     PC13_Counter++;
-    /* Toggle DAC output between 0 and full-scale (4095) */
-    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, (PC13_Counter*102 % 4096));
-
-    // HAL_GPIO_TogglePin(A5_LED2_GPIO_Port, A5_LED2_Pin);
-    // HAL_GPIO_TogglePin(A4_TEST_GPIO_Port, A4_TEST_Pin);
-    // static size_t preset_index = 0U;
-    // static const struct {
-    //   uint32_t freq_khz;
-    //   uint32_t duty_percent;
-    //   uint32_t deadtime_percent;
-    // } presets[] = {
-    //   {100U, 40U, 5U},
-    //   {150U, 60U, 3U},
-    //   {6780U, 35U, 1U},
-    //   {500U, 50U, 7U}
-    // };
-
-    // preset_index = (preset_index + 1U) % (sizeof(presets) / sizeof(presets[0]));
-
-    // g_tim1_pwm_frequency_khz = presets[preset_index].freq_khz;
-    // g_tim1_pwm_duty_percent = presets[preset_index].duty_percent;
-    // g_tim1_deadtime_percent = presets[preset_index].deadtime_percent;
-    // g_tim1_pwm_frequency_khz = 100u;
-    // g_tim1_pwm_duty_percent = 50u;
-    // g_tim1_deadtime_percent = 5u;
-    // TIM1_UpdateOutputWaveform();
-
-    // printf("PC13 Pressed %d times -> %lu kHz @ %lu%%, dead %lu%%\r\n",
-    //        PC13_Counter,
-    //        (unsigned long)g_tim1_pwm_frequency_khz,
-    //        (unsigned long)g_tim1_pwm_duty_percent,
-    //        (unsigned long)g_tim1_deadtime_percent);
+    /* Increase PWM frequency by 10 Hz each press (approximate achievable) */
+    g_tim1_pwm_freq_hz += 10U;
+    TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
   }
+}
+/* Add helper functions for PWM frequency handling */
+static uint32_t TIM1_GetTimerClockHz(void)
+{
+  RCC_ClkInitTypeDef clk_config = {0};
+  uint32_t flash_latency = 0;
+  HAL_RCC_GetClockConfig(&clk_config, &flash_latency);
+
+  uint32_t pclk2 = HAL_RCC_GetPCLK2Freq();
+  if (pclk2 == 0U) return 0U;
+  return (clk_config.APB2CLKDivider == RCC_HCLK_DIV1) ? pclk2 : (pclk2 * 2U);
+}
+
+static void TIM1_SetFrequencyHz(uint32_t freq_hz)
+{
+  if (freq_hz == 0U) return;
+  uint32_t timer_clk_hz = TIM1_GetTimerClockHz();
+  if (timer_clk_hz == 0U) return;
+
+  uint32_t factor =
+      ((htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED1) ||
+       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED2) ||
+       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED3)) ? 2U : 1U;
+
+  uint64_t denom_for_psc = (uint64_t)factor * 65536ULL * (uint64_t)freq_hz;
+  uint64_t presc_plus1 = (denom_for_psc == 0ULL) ? 1ULL : ((uint64_t)timer_clk_hz + denom_for_psc - 1ULL) / denom_for_psc;
+  if (presc_plus1 < 1ULL) presc_plus1 = 1ULL;
+  if (presc_plus1 > 65536ULL) presc_plus1 = 65536ULL;
+
+  uint64_t denom = (uint64_t)factor * presc_plus1 * (uint64_t)freq_hz;
+  if (denom == 0ULL) return;
+  uint64_t arr_plus1 = ((uint64_t)timer_clk_hz + (denom / 2ULL)) / denom; /* rounded */
+  if (arr_plus1 < 1ULL) arr_plus1 = 1ULL;
+  if (arr_plus1 > 65536ULL) arr_plus1 = 65536ULL;
+
+  uint32_t was_enabled = (htim1.Instance->CR1 & TIM_CR1_CEN);
+  if (was_enabled) __HAL_TIM_DISABLE(&htim1);
+
+  __HAL_TIM_SET_PRESCALER(&htim1, (uint32_t)(presc_plus1 - 1ULL));
+  __HAL_TIM_SET_AUTORELOAD(&htim1, (uint32_t)(arr_plus1 - 1ULL));
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, (uint32_t)(arr_plus1 / 2ULL)); /* ~50% duty */
+  __HAL_TIM_SET_COUNTER(&htim1, 0U);
+  htim1.Instance->EGR |= TIM_EGR_UG;
+
+  if (was_enabled) __HAL_TIM_ENABLE(&htim1);
 }
 /* USER CODE END 4 */
 
