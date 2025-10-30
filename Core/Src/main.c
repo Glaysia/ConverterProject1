@@ -18,10 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32h5xx_hal_dac.h"
+#include "stm32h5xx_hal_tim.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <math.h>
+#include <stdint.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,13 +65,14 @@ static void MX_TIM1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_DAC1_Init(void);
 /* USER CODE BEGIN PFP */
-static uint32_t TIM1_GetTimerClockHz(void);
-static void TIM1_UpdateOutputWaveform(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint16_t PC13_Counter = 0;
+uint16_t PWM_Counter = 0;
+uint16_t dac_value = 0;
 /* USER CODE END 0 */
 
 /**
@@ -105,9 +109,13 @@ int main(void)
   MX_ADC1_Init();
   MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
-  TIM1_UpdateOutputWaveform();
+  /* Start DAC and set initial output (0V) */
+  if (HAL_DAC_Start(&hdac1, DAC_CHANNEL_2) == HAL_OK) {
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+  }
+  HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+  // HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Initialize COM1 port (115200, 8 bits (7-bit data + 1 stop bit), no parity */
@@ -275,16 +283,17 @@ static void MX_DAC1_Init(void)
     Error_Handler();
   }
 
-  /** DAC channel OUT1 config
+  /** DAC channel OUT2 config
   */
   sConfig.DAC_HighFrequency = DAC_HIGH_FREQUENCY_INTERFACE_MODE_DISABLE;
   sConfig.DAC_DMADoubleDataMode = DISABLE;
   sConfig.DAC_SignedFormat = DISABLE;
   sConfig.DAC_SampleAndHold = DAC_SAMPLEANDHOLD_DISABLE;
   sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
   sConfig.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_BOTH;
   sConfig.DAC_UserTrimming = DAC_TRIMMING_FACTORY;
-  if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_1) != HAL_OK)
+  if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -340,14 +349,16 @@ static void MX_TIM1_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
   /* USER CODE BEGIN TIM1_Init 1 */
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 0;
+  htim1.Init.Prescaler = 1249;
   htim1.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3;
-  htim1.Init.Period = 1249;
+  htim1.Init.Period = 9999;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -360,6 +371,10 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
@@ -367,9 +382,38 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 5000;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.BreakFilter = 0;
+  sBreakDeadTimeConfig.BreakAFMode = TIM_BREAK_AFMODE_INPUT;
+  sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
+  sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
+  sBreakDeadTimeConfig.Break2Filter = 0;
+  sBreakDeadTimeConfig.Break2AFMode = TIM_BREAK_AFMODE_INPUT;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
+  HAL_TIM_MspPostInit(&htim1);
 
 }
 
@@ -406,104 +450,24 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-static uint32_t TIM1_GetTimerClockHz(void)
-{
-  RCC_ClkInitTypeDef clk_config = {0};
-  uint32_t flash_latency = 0;
 
-  HAL_RCC_GetClockConfig(&clk_config, &flash_latency);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+  if(htim->Instance == TIM1){
+    PWM_Counter++;
+    dac_value = (uint16_t)(2048 + 2047 * sinf(2.0f * 3.14159f * ((float)PWM_Counter) / 160.0f));
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac_value);
 
-  uint32_t pclk2 = HAL_RCC_GetPCLK2Freq();
-  if (pclk2 == 0U)
-  {
-    return 0U;
-  }
-
-  return (clk_config.APB2CLKDivider == RCC_HCLK_DIV1) ? pclk2 : (pclk2 * 2U);
-}
-
-static void TIM1_UpdateOutputWaveform(void)
-{
-  uint32_t timer_clk_hz = TIM1_GetTimerClockHz();
-  if (timer_clk_hz == 0U)
-  {
-    return;
-  }
-
-  uint32_t target_freq_hz = g_tim1_pwm_frequency_khz * 1000U;
-  if (target_freq_hz == 0U)
-  {
-    return;
-  }
-
-  uint32_t prescaler = htim1.Init.Prescaler + 1U;
-  uint32_t counter_mode = htim1.Init.CounterMode;
-  uint32_t counter_factor =
-      ((counter_mode == TIM_COUNTERMODE_CENTERALIGNED1) ||
-       (counter_mode == TIM_COUNTERMODE_CENTERALIGNED2) ||
-       (counter_mode == TIM_COUNTERMODE_CENTERALIGNED3)) ? 2U : 1U;
-
-  uint64_t denominator = (uint64_t)counter_factor * (uint64_t)prescaler * (uint64_t)target_freq_hz;
-  if (denominator == 0ULL)
-  {
-    return;
-  }
-
-  uint64_t arr_plus_one = ((uint64_t)timer_clk_hz + (denominator / 2ULL)) / denominator;
-  if (arr_plus_one == 0ULL)
-  {
-    arr_plus_one = 1ULL;
-  }
-
-  uint64_t arr_value = arr_plus_one - 1ULL;
-  if (arr_value > 0xFFFFULL)
-  {
-    arr_value = 0xFFFFULL;
-  }
-
-  uint32_t was_enabled = (htim1.Instance->CR1 & TIM_CR1_CEN);
-  if (was_enabled != 0U)
-  {
-    __HAL_TIM_DISABLE(&htim1);
-  }
-
-  __HAL_TIM_SET_AUTORELOAD(&htim1, (uint32_t)arr_value);
-  htim1.Init.Period = (uint32_t)arr_value;
-
-  uint32_t duty_percent = (g_tim1_pwm_duty_percent > 100U) ? 100U : g_tim1_pwm_duty_percent;
-  uint64_t pulse = ((arr_value + 1ULL) * duty_percent) / 100ULL;
-  if (pulse > arr_value)
-  {
-    pulse = arr_value;
-  }
-
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, (uint32_t)pulse);
-
-  uint32_t deadtime_percent = (g_tim1_deadtime_percent > 100U) ? 100U : g_tim1_deadtime_percent;
-  uint64_t deadtime_ticks = ((arr_value + 1ULL) * deadtime_percent) / 100ULL;
-  if (deadtime_ticks > 0xFFULL)
-  {
-    deadtime_ticks = 0xFFULL;
-  }
-
-  uint32_t bdtr = htim1.Instance->BDTR;
-  bdtr &= ~TIM_BDTR_DTG;
-  bdtr |= (uint32_t)deadtime_ticks;
-  htim1.Instance->BDTR = bdtr;
-
-  if (was_enabled != 0U)
-  {
-    __HAL_TIM_SET_COUNTER(&htim1, 0U);
-    __HAL_TIM_ENABLE(&htim1);
-    htim1.Instance->EGR |= TIM_EGR_UG;
   }
 }
 
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
   if (GPIO_Pin == C13_SWITCH_Pin) {
     PC13_Counter++;
-    HAL_GPIO_TogglePin(A5_LED2_GPIO_Port, A5_LED2_Pin);
-    HAL_GPIO_TogglePin(A4_TEST_GPIO_Port, A4_TEST_Pin);
+    /* Toggle DAC output between 0 and full-scale (4095) */
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, (PC13_Counter*102 % 4096));
+
+    // HAL_GPIO_TogglePin(A5_LED2_GPIO_Port, A5_LED2_Pin);
+    // HAL_GPIO_TogglePin(A4_TEST_GPIO_Port, A4_TEST_Pin);
     // static size_t preset_index = 0U;
     // static const struct {
     //   uint32_t freq_khz;
@@ -521,16 +485,16 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
     // g_tim1_pwm_frequency_khz = presets[preset_index].freq_khz;
     // g_tim1_pwm_duty_percent = presets[preset_index].duty_percent;
     // g_tim1_deadtime_percent = presets[preset_index].deadtime_percent;
-    g_tim1_pwm_frequency_khz = 100u;
-    g_tim1_pwm_duty_percent = 50u;
-    g_tim1_deadtime_percent = 5u;
-    TIM1_UpdateOutputWaveform();
+    // g_tim1_pwm_frequency_khz = 100u;
+    // g_tim1_pwm_duty_percent = 50u;
+    // g_tim1_deadtime_percent = 5u;
+    // TIM1_UpdateOutputWaveform();
 
-    printf("PC13 Pressed %d times -> %lu kHz @ %lu%%, dead %lu%%\r\n",
-           PC13_Counter,
-           (unsigned long)g_tim1_pwm_frequency_khz,
-           (unsigned long)g_tim1_pwm_duty_percent,
-           (unsigned long)g_tim1_deadtime_percent);
+    // printf("PC13 Pressed %d times -> %lu kHz @ %lu%%, dead %lu%%\r\n",
+    //        PC13_Counter,
+    //        (unsigned long)g_tim1_pwm_frequency_khz,
+    //        (unsigned long)g_tim1_pwm_duty_percent,
+    //        (unsigned long)g_tim1_deadtime_percent);
   }
 }
 /* USER CODE END 4 */
