@@ -81,8 +81,8 @@ class SerialReader(threading.Thread):
             pass
 
 
-def estimate_freq(ts_list, vals, center, hyst_codes):
-    # rising zero-crossing with hysteresis
+def estimate_freq_zero_cross(ts_list, vals, center, hyst_codes):
+    """Estimate frequency via rising zero-crossings with hysteresis."""
     crossings = []
     prev = None
     for ts, v in zip(ts_list, vals):
@@ -94,6 +94,22 @@ def estimate_freq(ts_list, vals, center, hyst_codes):
         prev = v
     if len(crossings) >= 2:
         periods = [crossings[i] - crossings[i - 1] for i in range(1, len(crossings))]
+        if periods:
+            avg = sum(periods) / len(periods)
+            if avg > 0:
+                return 1.0 / avg
+    return 0.0
+
+
+def estimate_freq_peaks(ts_list, vals, center):
+    """Fallback: estimate frequency from time between peaks above center."""
+    peaks = []
+    n = len(vals)
+    for i in range(1, n - 1):
+        if vals[i - 1] < vals[i] >= vals[i + 1] and vals[i] > center:
+            peaks.append(ts_list[i])
+    if len(peaks) >= 2:
+        periods = [peaks[i] - peaks[i - 1] for i in range(1, len(peaks))]
         if periods:
             avg = sum(periods) / len(periods)
             if avg > 0:
@@ -180,8 +196,12 @@ class MainWindow(QtWidgets.QMainWindow):
         vmax = max(vals)
         amp_codes = (vmax - vmin) / 2.0
         amp_volt = (amp_codes / 4095.0) * self.vref
-        center = sum(vals) / float(len(vals))
-        freq = estimate_freq(ts, vals, center, hyst_codes=0.02 * 4095.0)
+        # Use mid-point of min/max as center; adaptive hysteresis (20% of amplitude, min 2 codes)
+        center = 0.5 * (vmax + vmin)
+        hyst = max(amp_codes * 0.2, 2.0)
+        freq = estimate_freq_zero_cross(ts, vals, center, hyst_codes=hyst)
+        if freq == 0.0:
+            freq = estimate_freq_peaks(ts, vals, center)
 
         self.lbl_val.setText(f"value: {cur_val:4d}")
         self.lbl_volt.setText(f"volt: {cur_volt:5.3f} V")
@@ -212,4 +232,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-
