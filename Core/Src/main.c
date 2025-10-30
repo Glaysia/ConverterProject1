@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,11 +47,18 @@ DMA_HandleTypeDef hdma_adc1;
 
 TIM_HandleTypeDef htim1;
 
+UART_HandleTypeDef huart2;
+
 /* USER CODE BEGIN PV */
 uint32_t Counter_pc13 = 0;
 uint32_t Counter_100us = 0;
 uint32_t Counter_17ms = 0;
+uint16_t idx = 0;
+
+float voltage=0;
+
 __IO uint16_t adc_data[ADC_BUFFER_LENGTH];
+__IO uint16_t* adc_last;
 // bool Flag_adc = false;
 // bool isCompleted_Sequence = false;
 /* USER CODE END PV */
@@ -62,6 +69,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -103,6 +111,7 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim1);
   
@@ -114,7 +123,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+    if (idx >= ADC_BUFFER_LENGTH) {
+      char buffer[16];
+      int n = snprintf(buffer, sizeof(buffer), "%.3f\r\n", voltage);
+      HAL_UART_Transmit(&huart2, (uint8_t*)buffer, n, HAL_MAX_DELAY);
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -262,6 +275,39 @@ static void MX_TIM1_Init(void)
 }
 
 /**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -304,12 +350,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(PC13_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : USART_TX_Pin USART_RX_Pin */
-  GPIO_InitStruct.Pin = USART_TX_Pin|USART_RX_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
   /*Configure GPIO pins : LED2_harry_Pin GPIO_CN9D2_Pin */
   GPIO_InitStruct.Pin = LED2_harry_Pin|GPIO_CN9D2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -327,7 +367,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-__IO uint16_t idx = 0;
+
 // void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
 //   isCompleted_Sequence = true;
 
@@ -352,9 +392,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
   if (hadc->Instance == ADC1) {
-    adc_data[idx] = HAL_ADC_GetValue(hadc);
+    adc_last = (adc_data + idx); //idx[adc_data]
+    *adc_last = HAL_ADC_GetValue(hadc);
+    voltage = ((*adc_last) * 3.3f) / 4095.0f;
+    
     idx++;
     if (idx >= ADC_BUFFER_LENGTH) {
+      char buffer[16];
+      int n = snprintf(buffer, sizeof(buffer), "%.3f\r\n", voltage);
+      HAL_UART_Transmit(&huart2, (uint8_t*)buffer, n, HAL_MAX_DELAY);
       idx = 0;
     }
   }

@@ -29,7 +29,7 @@
             ],
             "liveWatch": {
                 "enabled": true,
-                "samplesPerSecond": 8
+                "samplesPerSecond": 4
             }
             //"preLaunchTask": "Build + Flash"
             /* If you use external loader, add additional arguments */
