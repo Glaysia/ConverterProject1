@@ -18,13 +18,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32h5xx_hal_dac.h"
-#include "stm32h5xx_hal_tim.h"
+#include "stm32h5xx_hal_adc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <math.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,8 +74,11 @@ static void TIM1_SetFrequencyHz(uint32_t freq_hz);
 /* USER CODE BEGIN 0 */
 uint16_t PC13_Counter = 0;
 uint16_t PWM_Counter = 0;
+uint16_t DAC_Counter = 0;
 uint16_t dac_value = 0;
-static uint32_t g_tim1_pwm_freq_hz = 10U; /* Start target at 10 Hz */
+static volatile uint16_t g_adc_last = 0; /* Updated in ADC IRQ */
+static uint32_t g_tim1_pwm_freq_hz = 100U; /* Start target at 10000 Hz */
+static bool enable_printf = false;
 /* USER CODE END 0 */
 
 /**
@@ -115,6 +119,8 @@ int main(void)
   if (HAL_DAC_Start(&hdac1, DAC_CHANNEL_2) == HAL_OK) {
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
   }
+  /* Start ADC in interrupt mode (continuous conversions) */
+  HAL_ADC_Start_IT(&hadc1);
   /* Ensure TIM1 starts at 10 Hz initially */
   TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
   HAL_TIM_Base_Start_IT(&htim1);
@@ -136,7 +142,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    // HAL_GPIO_WritePin(PA9_GPIO_ANALOG_GPIO_Port, PA9_GPIO_ANALOG_Pin, GPIO_PIN_SET);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -445,7 +451,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(C13_SWITCH_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI13_IRQn, 13, 0);
+  HAL_NVIC_SetPriority(EXTI13_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(EXTI13_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -455,12 +461,28 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+/* ADC end-of-conversion interrupt callback */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+  if (hadc->Instance == ADC1)
+  {
+    g_adc_last = (uint16_t)HAL_ADC_GetValue(hadc);
+  }
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   if(htim->Instance == TIM1){
     PWM_Counter++;
-    dac_value = (uint16_t)(2048 + 2047 * sinf(2.0f * 3.14159f * ((float)PWM_Counter) / 160.0f));
-    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac_value);
+    if (PWM_Counter >= 160) {
+      DAC_Counter++;
+      dac_value = (uint16_t)(2048 + 2047 * sinf(2.0f * 3.14159f * ((float)DAC_Counter) / 160.0f));
+      HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac_value);
+    }
 
+    if(enable_printf){
+      HAL_ADC_Start_IT(&hadc1);
+      printf("ADC=%u\r\n", (unsigned)g_adc_last);
+    }
   }
 }
 
@@ -468,8 +490,10 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
   if (GPIO_Pin == C13_SWITCH_Pin) {
     PC13_Counter++;
     /* Increase PWM frequency by 10 Hz each press (approximate achievable) */
-    g_tim1_pwm_freq_hz += 10U;
-    TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
+    // g_tim1_pwm_freq_hz += 10U;
+    // TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
+
+    enable_printf = !enable_printf;
   }
 }
 /* Add helper functions for PWM frequency handling */
