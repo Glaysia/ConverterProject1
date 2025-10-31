@@ -33,14 +33,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define PROTOCOL_STX 0x02U
-#define PROTOCOL_ETX 0x03U
-#define PROTOCOL_ACK 0x06U
-#define PROTOCOL_NAK 0x15U
-#define LED_CMD_ON '1'
-#define LED_CMD_OFF '0'
-#define LED_CMD_TOGGLE 'T'
-#define LED_TARGET_PRIMARY '0'
 
 /* USER CODE END PD */
 
@@ -58,9 +50,8 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-static uint8_t uartRxBuffer[5];
-static uint8_t latestFrame[5];
-static volatile uint8_t frameReady;
+static uint8_t uartRxByte;
+static volatile uint8_t commandPending;
 
 /* USER CODE END PV */
 
@@ -72,9 +63,8 @@ static void MX_ADC1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-static void StartUartReception(void);
-static void ProcessProtocolFrame(const uint8_t *frame);
-static void SendProtocolResponse(uint8_t cmd, uint8_t status);
+static void StartSingleByteReception(void);
+static void HandleCommand(uint8_t cmd);
 
 /* USER CODE END PFP */
 
@@ -117,7 +107,7 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  StartUartReception();
+  StartSingleByteReception();
 
   /* USER CODE END 2 */
 
@@ -128,24 +118,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    // static uint32_t lastHelloTick = 0;
-    // if ((HAL_GetTick() - lastHelloTick) >= 2000U)
-    // {
-    //   printf("hello world\r\n");
-    //   lastHelloTick = HAL_GetTick();
-    // }
-
-    if (frameReady)
+    if (commandPending)
     {
-      uint8_t frameCopy[sizeof(latestFrame)];
-
       __disable_irq();
-      memcpy(frameCopy, latestFrame, sizeof(frameCopy));
-      frameReady = 0U;
+      commandPending = 0U;
+      uint8_t cmd = uartRxByte;
       __enable_irq();
 
-      ProcessProtocolFrame(frameCopy);
+      HandleCommand(cmd);
     }
+    /* Idle loop */
   }
   /* USER CODE END 3 */
 }
@@ -389,64 +371,22 @@ int __io_putchar(int ch)
   return ch;
 }
 
-static void StartUartReception(void)
+static void StartSingleByteReception(void)
 {
-  if (HAL_UART_Receive_IT(&huart2, uartRxBuffer, sizeof(uartRxBuffer)) != HAL_OK)
+  if (HAL_UART_Receive_IT(&huart2, &uartRxByte, 1) != HAL_OK)
   {
     Error_Handler();
   }
 }
 
-static void ProcessProtocolFrame(const uint8_t *frame)
+static void HandleCommand(uint8_t cmd)
 {
-  uint8_t cmd = frame[1];
-  uint8_t data = frame[2];
-  uint8_t chk = frame[4];
-  uint8_t expectedChk = (uint8_t)(cmd + data + PROTOCOL_ETX);
-
-  if (frame[0] != PROTOCOL_STX || frame[3] != PROTOCOL_ETX)
+  if (cmd == 'q' || cmd == 'Q')
   {
-    printf("FRAME ERR: STX/ETX mismatch\r\n");
-    SendProtocolResponse(cmd, PROTOCOL_NAK);
-    return;
-  }
-
-  if (chk != expectedChk)
-  {
-    printf("CHK ERR: got 0x%02X expected 0x%02X\r\n", chk, expectedChk);
-    SendProtocolResponse(cmd, PROTOCOL_NAK);
-    return;
-  }
-
-  if (data != LED_TARGET_PRIMARY)
-  {
-    printf("DATA ERR: got 0x%02X\r\n", data);
-    SendProtocolResponse(cmd, PROTOCOL_NAK);
-    return;
-  }
-
-  if (cmd == LED_CMD_ON)
-  {
-    HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_SET);
-    printf("LD2 ON\r\n");
-    SendProtocolResponse(cmd, PROTOCOL_ACK);
-  }
-  else if (cmd == LED_CMD_OFF)
-  {
-    HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_RESET);
-    printf("LD2 OFF\r\n");
-    SendProtocolResponse(cmd, PROTOCOL_ACK);
-  }
-  else if (cmd == LED_CMD_TOGGLE)
-  {
-    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-    printf("LD2 TOGGLE\r\n");
-    SendProtocolResponse(cmd, PROTOCOL_ACK);
-  }
-  else
-  {
-    printf("CMD ERR: got 0x%02X\r\n", cmd);
-    SendProtocolResponse(cmd, PROTOCOL_NAK);
+    for (int idx = 1; idx <= 5; ++idx)
+    {
+      printf("%d %.2f: Test\r\n", idx, (idx/10.0f));
+    }
   }
 }
 
@@ -454,9 +394,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART2)
   {
-    memcpy(latestFrame, uartRxBuffer, sizeof(latestFrame));
-    frameReady = 1U;
-    StartUartReception();
+    commandPending = 1U;
+    StartSingleByteReception();
   }
 }
 
@@ -464,23 +403,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART2)
   {
-    StartUartReception();
-  }
-}
-
-static void SendProtocolResponse(uint8_t cmd, uint8_t status)
-{
-  uint8_t response[5];
-
-  response[0] = PROTOCOL_STX;
-  response[1] = cmd;
-  response[2] = status;
-  response[3] = PROTOCOL_ETX;
-  response[4] = (uint8_t)(response[1] + response[2] + response[3]);
-
-  if (HAL_UART_Transmit(&huart2, response, sizeof(response), HAL_MAX_DELAY) != HAL_OK)
-  {
-    Error_Handler();
+    StartSingleByteReception();
   }
 }
 
