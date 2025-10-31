@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <string.h>
 
 /* USER CODE END Includes */
 
@@ -49,6 +50,9 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+static uint8_t uartRxBuffer[5];
+static uint8_t latestFrame[5];
+static volatile uint8_t frameReady;
 
 /* USER CODE END PV */
 
@@ -60,6 +64,8 @@ static void MX_ADC1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+static void StartUartReception(void);
+static void ProcessProtocolFrame(const uint8_t *frame);
 
 /* USER CODE END PFP */
 
@@ -102,6 +108,7 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  StartUartReception();
 
   /* USER CODE END 2 */
 
@@ -112,8 +119,24 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    printf("hello world\r\n");
-    HAL_Delay(2000);
+    // static uint32_t lastHelloTick = 0;
+    // if ((HAL_GetTick() - lastHelloTick) >= 2000U)
+    // {
+    //   printf("hello world\r\n");
+    //   lastHelloTick = HAL_GetTick();
+    // }
+
+    if (frameReady)
+    {
+      uint8_t frameCopy[sizeof(latestFrame)];
+
+      __disable_irq();
+      memcpy(frameCopy, latestFrame, sizeof(frameCopy));
+      frameReady = 0U;
+      __enable_irq();
+
+      ProcessProtocolFrame(frameCopy);
+    }
   }
   /* USER CODE END 3 */
 }
@@ -341,7 +364,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -355,6 +378,64 @@ int __io_putchar(int ch)
   /* Redirect STDOUT to USART2 for printf */
   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
   return ch;
+}
+
+static void StartUartReception(void)
+{
+  if (HAL_UART_Receive_IT(&huart2, uartRxBuffer, sizeof(uartRxBuffer)) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+static void ProcessProtocolFrame(const uint8_t *frame)
+{
+  const uint8_t STX = 0x02;
+  const uint8_t ETX = 0x03;
+
+  if (frame[0] != STX || frame[3] != ETX)
+  {
+    return;
+  }
+
+  uint8_t cmd = frame[1];
+  uint8_t data = frame[2];
+  uint8_t chk = frame[4];
+  uint8_t expectedChk = (uint8_t)(cmd + data + ETX);
+
+  if (chk != expectedChk)
+  {
+    printf("CHK WARN: got 0x%02X expected 0x%02X\r\n", chk, expectedChk);
+  }
+
+  if (cmd == '1')
+  {
+    HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_SET);
+    printf("LD2 ON\r\n");
+  }
+  else if (cmd == '0')
+  {
+    HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_RESET);
+    printf("LD2 OFF\r\n");
+  }
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART2)
+  {
+    memcpy(latestFrame, uartRxBuffer, sizeof(latestFrame));
+    frameReady = 1U;
+    StartUartReception();
+  }
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART2)
+  {
+    StartUartReception();
+  }
 }
 
 /* USER CODE END 4 */
