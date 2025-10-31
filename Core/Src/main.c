@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,8 +31,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define ADC_CHANNEL_NUMBER 3
-#define ADC_BUFFER_LENGTH 512
 
 /* USER CODE END PD */
 
@@ -50,17 +48,7 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint32_t Counter_pc13 = 0;
-uint32_t Counter_100us = 0;
-uint32_t Counter_17ms = 0;
-uint16_t idx = 0;
 
-float voltage=0;
-
-__IO uint16_t adc_data[ADC_BUFFER_LENGTH];
-__IO uint16_t* adc_last;
-// bool Flag_adc = false;
-// bool isCompleted_Sequence = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -113,21 +101,13 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim1);
-  
-  // HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-  // HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if (idx >= ADC_BUFFER_LENGTH) {
-      char buffer[16];
-      int n = snprintf(buffer, sizeof(buffer), "%.3f\r\n", voltage);
-      HAL_UART_Transmit(&huart2, (uint8_t*)buffer, n, HAL_MAX_DELAY);
-    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -368,51 +348,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
-//   isCompleted_Sequence = true;
-
-//   if(hadc->Instance == hadc1.Instance){
-//     adc_data[0][idx] = adc_buffer[0];
-//     adc_data[1][idx] = adc_buffer[1];
-//     adc_data[2][idx] = adc_buffer[2];
-//     idx++;
-//     idx%=ADC_BUFFER_LENGTH;
-//   }
-// }
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  if (htim->Instance == TIM1) {
-    HAL_GPIO_TogglePin(GPIO_CN9D2_GPIO_Port,GPIO_CN9D2_Pin);
-    Counter_100us++;
-    HAL_ADC_Start_IT(&hadc1);
-
-  }
-}
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-  if (hadc->Instance == ADC1) {
-    adc_last = (adc_data + idx); //idx[adc_data]
-    *adc_last = HAL_ADC_GetValue(hadc);
-    voltage = ((*adc_last) * 3.3f) / 4095.0f;
-    
-    idx++;
-    if (idx >= ADC_BUFFER_LENGTH) {
-      char buffer[16];
-      int n = snprintf(buffer, sizeof(buffer), "%.3f\r\n", voltage);
-      HAL_UART_Transmit(&huart2, (uint8_t*)buffer, n, HAL_MAX_DELAY);
-      idx = 0;
-    }
-  }
-}
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-  if (GPIO_Pin == GPIO_PIN_13) {
-    // Handle the interrupt for the user button (PC13)
-    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
-    Counter_pc13++;
-  }
-}
 /* USER CODE END 4 */
 
 /**
