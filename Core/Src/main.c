@@ -33,6 +33,14 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define PROTOCOL_STX 0x02U
+#define PROTOCOL_ETX 0x03U
+#define PROTOCOL_ACK 0x06U
+#define PROTOCOL_NAK 0x15U
+#define LED_CMD_ON '1'
+#define LED_CMD_OFF '0'
+#define LED_CMD_TOGGLE 'T'
+#define LED_TARGET_PRIMARY '0'
 
 /* USER CODE END PD */
 
@@ -66,6 +74,7 @@ static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 static void StartUartReception(void);
 static void ProcessProtocolFrame(const uint8_t *frame);
+static void SendProtocolResponse(uint8_t cmd, uint8_t status);
 
 /* USER CODE END PFP */
 
@@ -390,33 +399,54 @@ static void StartUartReception(void)
 
 static void ProcessProtocolFrame(const uint8_t *frame)
 {
-  const uint8_t STX = 0x02;
-  const uint8_t ETX = 0x03;
-
-  if (frame[0] != STX || frame[3] != ETX)
-  {
-    return;
-  }
-
   uint8_t cmd = frame[1];
   uint8_t data = frame[2];
   uint8_t chk = frame[4];
-  uint8_t expectedChk = (uint8_t)(cmd + data + ETX);
+  uint8_t expectedChk = (uint8_t)(cmd + data + PROTOCOL_ETX);
+
+  if (frame[0] != PROTOCOL_STX || frame[3] != PROTOCOL_ETX)
+  {
+    printf("FRAME ERR: STX/ETX mismatch\r\n");
+    SendProtocolResponse(cmd, PROTOCOL_NAK);
+    return;
+  }
 
   if (chk != expectedChk)
   {
-    printf("CHK WARN: got 0x%02X expected 0x%02X\r\n", chk, expectedChk);
+    printf("CHK ERR: got 0x%02X expected 0x%02X\r\n", chk, expectedChk);
+    SendProtocolResponse(cmd, PROTOCOL_NAK);
+    return;
   }
 
-  if (cmd == '1')
+  if (data != LED_TARGET_PRIMARY)
+  {
+    printf("DATA ERR: got 0x%02X\r\n", data);
+    SendProtocolResponse(cmd, PROTOCOL_NAK);
+    return;
+  }
+
+  if (cmd == LED_CMD_ON)
   {
     HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_SET);
     printf("LD2 ON\r\n");
+    SendProtocolResponse(cmd, PROTOCOL_ACK);
   }
-  else if (cmd == '0')
+  else if (cmd == LED_CMD_OFF)
   {
     HAL_GPIO_WritePin(LED2_harry_GPIO_Port, LED2_harry_Pin, GPIO_PIN_RESET);
     printf("LD2 OFF\r\n");
+    SendProtocolResponse(cmd, PROTOCOL_ACK);
+  }
+  else if (cmd == LED_CMD_TOGGLE)
+  {
+    HAL_GPIO_TogglePin(LED2_harry_GPIO_Port, LED2_harry_Pin);
+    printf("LD2 TOGGLE\r\n");
+    SendProtocolResponse(cmd, PROTOCOL_ACK);
+  }
+  else
+  {
+    printf("CMD ERR: got 0x%02X\r\n", cmd);
+    SendProtocolResponse(cmd, PROTOCOL_NAK);
   }
 }
 
@@ -435,6 +465,22 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
   if (huart->Instance == USART2)
   {
     StartUartReception();
+  }
+}
+
+static void SendProtocolResponse(uint8_t cmd, uint8_t status)
+{
+  uint8_t response[5];
+
+  response[0] = PROTOCOL_STX;
+  response[1] = cmd;
+  response[2] = status;
+  response[3] = PROTOCOL_ETX;
+  response[4] = (uint8_t)(response[1] + response[2] + response[3]);
+
+  if (HAL_UART_Transmit(&huart2, response, sizeof(response), HAL_MAX_DELAY) != HAL_OK)
+  {
+    Error_Handler();
   }
 }
 
