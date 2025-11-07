@@ -63,8 +63,6 @@ static void MX_ADC1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-static void StartSingleByteReception(void);
-static void HandleCommand(uint8_t cmd);
 
 /* USER CODE END PFP */
 
@@ -107,7 +105,6 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  StartSingleByteReception();
 
   /* USER CODE END 2 */
 
@@ -118,15 +115,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    if (commandPending)
-    {
-      __disable_irq();
-      commandPending = 0U;
-      uint8_t cmd = uartRxByte;
-      __enable_irq();
-
-      HandleCommand(cmd);
-    }
+    
     /* Idle loop */
   }
   /* USER CODE END 3 */
@@ -371,41 +360,6 @@ int __io_putchar(int ch)
   return ch;
 }
 
-static void StartSingleByteReception(void)
-{
-  if (HAL_UART_Receive_IT(&huart2, &uartRxByte, 1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
-
-static void HandleCommand(uint8_t cmd)
-{
-  if (cmd == 'q' || cmd == 'Q')
-  {
-    for (int idx = 1; idx <= 5; ++idx)
-    {
-      printf("%d %.2f: Test\r\n", idx, (idx/10.0f));
-    }
-  }
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  if (huart->Instance == USART2)
-  {
-    commandPending = 1U;
-    StartSingleByteReception();
-  }
-}
-
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-  if (huart->Instance == USART2)
-  {
-    StartSingleByteReception();
-  }
-}
 
 /* USER CODE END 4 */
 
