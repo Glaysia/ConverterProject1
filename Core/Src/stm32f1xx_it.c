@@ -65,6 +65,7 @@ extern UART_HandleTypeDef huart2;
 
 extern uint8_t UartRxDMA_Buf[];
 extern volatile uint16_t UartRxCount;
+extern volatile uint8_t RxDMA_Data_Flag;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -273,22 +274,8 @@ void USART2_IRQHandler(void)
     tmp = huart2.Instance->SR;
     tmp = huart2.Instance->DR;
     (void)tmp;
-    HAL_UART_DMAStop(&huart2);
 
-    uint16_t remaining = __HAL_DMA_GET_COUNTER(huart2.hdmarx);
-    UartRxCount = RXBUF_MAX - remaining;
-
-    if (UartRxCount > 0)
-    {
-      HAL_UART_Transmit(&huart2, UartRxDMA_Buf, UartRxCount, 100);
-      // Process received data in UartRxDMA_Buf, length UartRxCount
-      // For example, set a flag or call a processing function
-    } 
-
-    memset(UartRxDMA_Buf, 0, RXBUF_MAX);
-
-    HAL_UART_Receive_DMA(&huart2, UartRxDMA_Buf, RXBUF_MAX);
-    
+    RxDMA_Data_Flag = 1;
     // Handle IDLE line detection if needed
   }
 

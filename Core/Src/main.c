@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f1xx_hal_uart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,6 +58,9 @@ DMA_HandleTypeDef hdma_usart2_tx;
 // static volatile uint8_t commandPending;
 uint8_t UartRxDMA_Buf[RXBUF_MAX];
 volatile uint16_t UartRxCount=0;
+volatile uint8_t RxDMA_Data_Flag=0;
+volatile uint16_t head=0;
+volatile uint16_t tail=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -117,6 +121,23 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    if(RxDMA_Data_Flag == 1){
+      __disable_irq();
+      head = RXBUF_MAX - __HAL_DMA_GET_COUNTER(huart2.hdmarx);
+      RxDMA_Data_Flag = 0;
+      __enable_irq();
+
+      while (head!=tail) {
+        if(head > tail){
+          // Process data from tail to head-1
+          HAL_UART_Transmit(&huart2, &UartRxDMA_Buf[tail], head - tail, 1000);      
+        }else{
+          HAL_UART_Transmit(&huart2, &UartRxDMA_Buf[tail], RXBUF_MAX - tail, 1000);
+          HAL_UART_Transmit(&huart2, &UartRxDMA_Buf[0], head, 1000);
+        }
+        tail = head;
+        head= RXBUF_MAX - __HAL_DMA_GET_COUNTER(huart2.hdmarx);
+      }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -124,6 +145,7 @@ int main(void)
     /* Idle loop */
   }
   /* USER CODE END 3 */
+  }
 }
 
 /**
