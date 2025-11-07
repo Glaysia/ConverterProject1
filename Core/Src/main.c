@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f1xx_hal_tim.h"
+#include "stm32f1xx_hal_uart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -34,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define ADCBUF_MAX 100
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -60,6 +62,8 @@ volatile uint16_t UartRxCount=0;
 volatile uint8_t RxDMA_Data_Flag=0;
 volatile uint16_t head=0;
 volatile uint16_t tail=0;
+
+uint16_t adc_buf[ADCBUF_MAX];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -114,30 +118,17 @@ int main(void)
   /* USER CODE BEGIN 2 */
   UART2_DMA_Ready();
 
-  HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_1);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADCBUF_MAX);
+  HAL_TIM_Base_Start(&htim3);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if(RxDMA_Data_Flag == 1){
-      __disable_irq();
-      head = RXBUF_MAX - __HAL_DMA_GET_COUNTER(huart2.hdmarx);
-      RxDMA_Data_Flag = 0;
-      __enable_irq();
 
-      while (head!=tail) {
-        if(head > tail){
-          // Process data from tail to head-1
-          HAL_UART_Transmit(&huart2, &UartRxDMA_Buf[tail], head - tail, 1000);      
-        }else{
-          HAL_UART_Transmit(&huart2, &UartRxDMA_Buf[tail], RXBUF_MAX - tail, 1000);
-          HAL_UART_Transmit(&huart2, &UartRxDMA_Buf[0], head, 1000);
-        }
-        tail = head;
-        head= RXBUF_MAX - __HAL_DMA_GET_COUNTER(huart2.hdmarx);
-      }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -145,8 +136,8 @@ int main(void)
     /* Idle loop */
   }
   /* USER CODE END 3 */
-  }
 }
+
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -417,6 +408,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
   }
 }
 
+
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
+  if(hadc->Instance == ADC1){
+    uint32_t sum = 0;
+    for(int i = 0; i < ADCBUF_MAX; i++) sum += HAL_ADC_GetValue(hadc);
+
+    float avg = sum / (float)ADCBUF_MAX * (3.3f / 4095.0f);
+    char line[32];
+    int len = sprintf(line, "ADC Voltage: %.2f V\r\n", avg);
+    HAL_UART_Transmit(&huart2, (uint8_t *)line, len, 50);
+
+    // Handle ADC conversion complete if needed
+  }
+}
 
 /* USER CODE END 4 */
 
