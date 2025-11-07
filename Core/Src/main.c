@@ -18,8 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f1xx_hal_dma.h"
 #include "stm32f1xx_hal_tim.h"
-#include "stm32f1xx_hal_uart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -46,9 +46,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-DMA_HandleTypeDef hdma_adc1;
 
 TIM_HandleTypeDef htim3;
+DMA_HandleTypeDef hdma_tim3_ch4_up;
 
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
@@ -62,8 +62,26 @@ volatile uint16_t UartRxCount=0;
 volatile uint8_t RxDMA_Data_Flag=0;
 volatile uint16_t head=0;
 volatile uint16_t tail=0;
-
 uint16_t adc_buf[ADCBUF_MAX];
+
+
+uint16_t Counter_1kHz=0;
+uint8_t pulse_index=0;
+
+uint16_t pulse_coeff=125;
+
+static const uint8_t pulse_values[100] = {
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+  10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+  20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+  30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+  40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+  50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+  60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+  70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+  80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
+  90, 91, 92, 93, 94, 95, 96, 97, 98, 99
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,9 +136,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
   UART2_DMA_Ready();
 
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADCBUF_MAX);
-  HAL_TIM_Base_Start(&htim3);
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  // HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADCBUF_MAX);
+  // HAL_TIM_Base_Start_DMA(&htim3, (uint32_t*)&Counter_1kHz, 1);
+  HAL_TIM_Base_Start_IT(&htim3);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_4, (uint32_t*)pulse_values, 100);
 
   /* USER CODE END 2 */
 
@@ -279,7 +299,7 @@ static void MX_TIM3_Init(void)
   sConfigOC.Pulse = 50;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -333,9 +353,9 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
   /* DMA1_Channel6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
@@ -424,6 +444,24 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
   }
 }
 
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+  if(htim->Instance == TIM3){
+    Counter_1kHz++;
+    if(Counter_1kHz >= 1000){
+      Counter_1kHz = 0;
+      // 1 second tasks can be placed here
+    }
+
+    if(Counter_1kHz>= pulse_coeff){
+      Counter_1kHz = 0;
+      pulse_index++;
+      if(pulse_index >= 100) pulse_index = 0;
+    }
+
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pulse_values[pulse_index]);
+  }
+}
 /* USER CODE END 4 */
 
 /**
