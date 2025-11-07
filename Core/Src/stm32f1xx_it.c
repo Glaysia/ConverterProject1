@@ -22,6 +22,7 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +63,8 @@ extern DMA_HandleTypeDef hdma_usart2_tx;
 extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
 
+extern uint8_t UartRxDMA_Buf[];
+extern volatile uint16_t UartRxCount;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -264,6 +267,30 @@ void TIM3_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
+  if((__HAL_UART_GET_FLAG(&huart2, UART_FLAG_IDLE) != RESET))
+  {
+    volatile uint32_t tmp;
+    tmp = huart2.Instance->SR;
+    tmp = huart2.Instance->DR;
+    (void)tmp;
+    HAL_UART_DMAStop(&huart2);
+
+    uint16_t remaining = __HAL_DMA_GET_COUNTER(huart2.hdmarx);
+    UartRxCount = RXBUF_MAX - remaining;
+
+    if (UartRxCount > 0)
+    {
+      HAL_UART_Transmit(&huart2, UartRxDMA_Buf, UartRxCount, 100);
+      // Process received data in UartRxDMA_Buf, length UartRxCount
+      // For example, set a flag or call a processing function
+    } 
+
+    memset(UartRxDMA_Buf, 0, RXBUF_MAX);
+
+    HAL_UART_Receive_DMA(&huart2, UartRxDMA_Buf, RXBUF_MAX);
+    
+    // Handle IDLE line detection if needed
+  }
 
   /* USER CODE END USART2_IRQn 0 */
   HAL_UART_IRQHandler(&huart2);

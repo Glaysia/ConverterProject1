@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -52,9 +53,10 @@ DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-static uint8_t uartRxByte;
-static volatile uint8_t commandPending;
-
+// static uint8_t uartRxByte;
+// static volatile uint8_t commandPending;
+uint8_t UartRxDMA_Buf[RXBUF_MAX];
+volatile uint16_t UartRxCount=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,7 +67,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void UART2_DMA_Ready(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -107,6 +109,7 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+  UART2_DMA_Ready();
 
   /* USER CODE END 2 */
 
@@ -365,6 +368,18 @@ int __io_putchar(int ch)
   /* Redirect STDOUT to USART2 for printf */
   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
   return ch;
+}
+
+static void UART2_DMA_Ready(void){
+  __HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);
+
+  HAL_UART_Receive_DMA(&huart2, UartRxDMA_Buf, RXBUF_MAX);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+  if(huart->Instance == USART2){
+    // Handle full buffer reception if needed
+  }
 }
 
 
