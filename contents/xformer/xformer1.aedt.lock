@@ -1,0 +1,42 @@
+$begin 'ConnectionParameters'
+	DesktopProcessID=2929306
+	DesktopProcessPath='/home/harry/opt/AnsysEM/v242/Linux64/ansysedt.exe'
+	LaunchedByWB=false
+	GRPCPort=50051
+	$begin 'DesktopStubBlock'
+		$begin 'CommDetails'
+			TransportType=1
+			IPAddress='172.16.166.138'
+			ListenPort='45529'
+			IPAddressVector[3: '172.18.0.1', '172.19.0.1', '172.17.0.1']
+		$end 'CommDetails'
+		$begin 'Marshall'
+			InstanceID=503
+			ProcID=2929624
+			InterfaceID=1
+			FactoryIntID='DesktopInterfaceForWBProxyStubFactory'
+		$end 'Marshall'
+	$end 'DesktopStubBlock'
+	$begin 'DesktopBackgroundObjStubBlock'
+		$begin 'CommDetails'
+			TransportType=1
+			IPAddress='172.16.166.138'
+			ListenPort='45529'
+			IPAddressVector[3: '172.18.0.1', '172.19.0.1', '172.17.0.1']
+		$end 'CommDetails'
+		$begin 'Marshall'
+			InstanceID=505
+			ProcID=2929624
+			InterfaceID=2
+			FactoryIntID='DesktopInterfaceForWBProxyStubFactory'
+		$end 'Marshall'
+	$end 'DesktopBackgroundObjStubBlock'
+	$begin 'WebClientBlock'
+		Url='http://harrypc:28033/?server=ws://harrypc:57740&token=76719286-d6d4-4f24-c039-021a92d588f8&startTab=monitor/graph'
+		SecureUrl='https://harrypc:17820/?server=wss://harrypc:26000&token=76719286-d6d4-4f24-c039-021a92d588f8&startTab=monitor/graph'
+		WsHost='harrypc'
+		WsPort=57740
+		WssPort=26000
+		Token='76719286-d6d4-4f24-c039-021a92d588f8'
+	$end 'WebClientBlock'
+$end 'ConnectionParameters'

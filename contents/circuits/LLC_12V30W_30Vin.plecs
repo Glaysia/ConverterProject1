@@ -23,16 +23,16 @@ Plecs {
   MaxConsecutiveZCs "1000"
   AlgebraicLoopWithStateMachineMsg "2"
   AssertionAction "1"
-  InitializationCommands "%% Electrical\n\nV_DC = 6;\t\t     %[V]\nn_prim = 10"
-";\nn_sndry = 14;\n\n%Primary Side\nL_r = 59e-6;\t\t\t  %[H]\nL_m = 281e-6;\t"
-"\t  %[H]\nC_r = 27e-9;\t\t\t  %[F]\n\n%Secondary Side\nC_o = 560e-6;\t\t  %[F"
-"]\nC_v_init = 0;\t\t  %[V]\nR_o = 2.5;\t\t\t  %[Ohm]\nESR = 30e-3;\t\t     %["
-"Ohm]\n\n% V_out_desired = 5; %[V]\n\n%% Controller\n\nR1 = 19.7e3;\nR2 = R1/3"
-";\n\n% V_ref = V_out_desired * R2 / (R1 + R2); % reference voltage\n\n%% Type"
-" 2 Compensator\nType2.wz1 = 2*pi*4.2e3; % frequency of type2 zero\nType2.wp0 "
-"= 3.2e3; % DC gain of type 2 compensator\nType2.wp1 = 2*pi*8.2e3; % frequency"
-" of type2 pole\n\nfreq_k = 100.675\nfreq_k_pct = freq_k/100\n\nfrq_r = 1/(6.2"
-"83*sqrt(L_r*C_r))\n\n\nfreq = freq_k_pct * frq_r"
+  InitializationCommands "%% Electrical\n\nV_DC = 10;\t\t     %[V]\nn_prim = 5"
+";\nn_sndry = 6;\n\n%Primary Side\nL_r = 8e-6;\t\t\t  %[H]\nL_m = 60e-6;\t\t  "
+"%[H]\nC_r = 350e-9;\t\t\t  %[F]\n\n%Secondary Side\nC_o = 560e-6;\t\t  %[F]\n"
+"C_v_init = 0;\t\t  %[V]\nR_o = 2.5;\t\t\t  %[Ohm]\nESR = 30e-3;\t\t     %[Ohm"
+"]\n\n% V_out_desired = 5; %[V]\n\n%% Controller\n\nR1 = 19.7e3;\nR2 = R1/3;\n"
+"\n% V_ref = V_out_desired * R2 / (R1 + R2); % reference voltage\n\n%% Type 2 "
+"Compensator\nType2.wz1 = 2*pi*4.2e3; % frequency of type2 zero\nType2.wp0 = 3"
+".2e3; % DC gain of type 2 compensator\nType2.wp1 = 2*pi*8.2e3; % frequency of"
+" type2 pole\n\nfreq_k = 140\nfreq_k_pct = freq_k/100\n\nfrq_r = 1/(6.283*sqrt"
+"(L_r*C_r))\n\n\nfreq = freq_k_pct * frq_r"
   InitialState  "1"
   SystemState   ""
   TaskingMode   "1"
@@ -56,8 +56,8 @@ Plecs {
   ScriptsDialogGeometry ""
   ScriptsDialogSplitterPos "0"
   Schematic {
-    Location      [1132, 339; 2212, 1037]
-    ZoomFactor    1.33333
+    Location      [0, 490; 1080, 1188]
+    ZoomFactor    1.16513
     SliderPosition [0, 0]
     ShowBrowser   off
     BrowserWidth  158
@@ -284,27 +284,27 @@ Plecs {
       Position      [830, 170]
       Direction     up
       Flipped       off
-      Location      [2249, 337; 2926, 1177]
-      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAACnvwCAAAAA/sAAAAQAFoAbwBvA"
-"G0AQQByAGUAYQAAAAAA/////wAAAFkA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwMAAAAAAA"
-"AAGwAAAMgAAACN+wAAAAwAVAByAGEAYwBlAHMBAAAANQAAAp4AAABjAP///wAAAAMAAAKlAAAAhfw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAAqUAAABEAP///wAAAesAAAKeAAAA"
+      Location      [98, 980; 958, 1573]
+      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAABp/wCAAAAA/sAAAAQAFoAbwBvA"
+"G0AQQByAGUAYQAAAAAA/////wAAAFkA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwIAAAFRAA"
+"ABSwAAAMgAAACN+wAAAAwAVAByAGEAYwBlAHMBAAAANQAAAacAAABjAP///wAAAAMAAANcAAAAhfw"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAA1wAAABEAP///wAAAqIAAAGnAAAA"
 "BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
 "AAAAA=="
       SavedViews    "AAAAAgAAAAA="
-      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAC"
-"QAAAGQAAAAIAAAAZAAAAAUAAABkAAAABAAAAGQAAAAHAAAAZAAAAAYAAABkAAAAAQAAAGQAAAADAA"
-"AAZAAAAAIAAABkAAACpQAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAABCAAA"
-"AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
-"AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
-"AJjAAAAAQAAAAAAAAPoAAAAACM="
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL+AMAAAAHAAAAC"
+"AAAAGQAAAAJAAAAZAAAAAMAAABkAAAABgAAAGQAAAAHAAAAZAAAAAQAAABkAAAABQAAAGQAAANcAA"
+"AACwEAAAEAAAAAAAAAAAAAAABk/////wAAAIEAAAAAAAAACwAAALoAAAABAAAAAAAAAGQAAAABAAA"
+"AAAAAAGQAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAB"
+"AAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAdoAAAABAAAAAAAAA+gAA"
+"AAAIw=="
       PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA"
 "AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
       Axes          "2"
       TimeRange     "0.03"
       ScrollingMode "1"
       SingleTimeAxis "1"
-      Open          "1"
+      Open          "0"
       Ts            "-1"
       SampleLimit   "0"
       XAxisLabel    ""
@@ -404,20 +404,20 @@ Plecs {
       Position      [325, 350]
       Direction     up
       Flipped       off
-      Location      [615, 787; 1348, 1018]
+      Location      [347, 787; 1080, 1026]
       State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAbwBvA"
 "G0AQQByAGUAYQAAAAAA/////wAAAFkA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
 "///wAAAGMA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABjAP///wAAAAMAAAAAAAAAAPw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAP////8AAABEAP///wAAAt0AAADIAAAA"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAP////8AAABEAP///wAAAt0AAADQAAAA"
 "BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
 "AAAAA=="
       SavedViews    "AAAAAgAAAAA="
-      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAA"
-"QAAAGQAAAAJAAAAZAAAAAgAAABkAAAABwAAAGQAAAAGAAAAZAAAAAUAAABkAAAABAAAAGQAAAADAA"
-"AAZAAAAAIAAABkAAAAugAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAACXAAA"
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAC"
+"AAAAGQAAAAJAAAAZAAAAAIAAABkAAAAAwAAAGQAAAABAAAAZAAAAAYAAABkAAAABwAAAGQAAAAEAA"
+"AAZAAAAAUAAABkAAAAugAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAACXAAA"
 "AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
 "AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
-"AAjAAAAAQAAAAAAAAPoAA=="
+"AAjAAAAAQAAAAAAAAPoAP////8="
       PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA"
 "AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
       Axes          "2"
@@ -1017,4 +1017,4 @@ Plecs {
     Response      "v_loop/Response"
   }
 }
-DemoSignature "6j/St/zI8zf//pVs6lfke9sCIIbp2wRjYMmE+FTavbA="
+DemoSignature "LUSFW7U/wVda2c2jA/GdK4GnFb3gImUbVy+YOqCxyao="
