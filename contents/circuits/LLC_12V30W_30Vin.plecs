@@ -23,16 +23,16 @@ Plecs {
   MaxConsecutiveZCs "1000"
   AlgebraicLoopWithStateMachineMsg "2"
   AssertionAction "1"
-  InitializationCommands "%% Electrical\n\nV_DC = 10;\t\t     %[V]\nn_prim = 5"
-";\nn_sndry = 6;\n\n%Primary Side\nL_r = 8e-6;\t\t\t  %[H]\nL_m = 60e-6;\t\t  "
-"%[H]\nC_r = 350e-9;\t\t\t  %[F]\n\n%Secondary Side\nC_o = 560e-6;\t\t  %[F]\n"
-"C_v_init = 0;\t\t  %[V]\nR_o = 2.5;\t\t\t  %[Ohm]\nESR = 30e-3;\t\t     %[Ohm"
-"]\n\n% V_out_desired = 5; %[V]\n\n%% Controller\n\nR1 = 19.7e3;\nR2 = R1/3;\n"
-"\n% V_ref = V_out_desired * R2 / (R1 + R2); % reference voltage\n\n%% Type 2 "
-"Compensator\nType2.wz1 = 2*pi*4.2e3; % frequency of type2 zero\nType2.wp0 = 3"
-".2e3; % DC gain of type 2 compensator\nType2.wp1 = 2*pi*8.2e3; % frequency of"
-" type2 pole\n\nfreq_k = 140\nfreq_k_pct = freq_k/100\n\nfrq_r = 1/(6.283*sqrt"
-"(L_r*C_r))\n\n\nfreq = freq_k_pct * frq_r"
+  InitializationCommands "%% Electrical\n\nV_DC = 10;\t\t     %[V]\nn_prim = 1"
+";\nn_sndry = 2;\n\n%Primary Side\nL_r = 2.7e-6;\t\t\t  %[H]\nL_m = 13.7e-6;\t"
+"\t  %[H]\nC_r = 235e-9;\t\t\t  %[F]\n\n%Secondary Side\nC_o = 560e-6;\t\t  %["
+"F]\nC_v_init = 0;\t\t  %[V]\nR_o = 2.5;\t\t\t  %[Ohm]\nESR = 30e-3;\t\t     %"
+"[Ohm]\n\n% V_out_desired = 5; %[V]\n\n%% Controller\n\nR1 = 19.7e3;\nR2 = R1/"
+"3;\n\n% V_ref = V_out_desired * R2 / (R1 + R2); % reference voltage\n\n%% Typ"
+"e 2 Compensator\nType2.wz1 = 2*pi*4.2e3; % frequency of type2 zero\nType2.wp0"
+" = 3.2e3; % DC gain of type 2 compensator\nType2.wp1 = 2*pi*8.2e3; % frequenc"
+"y of type2 pole\n\nfreq_k = 113\nfreq_k_pct = freq_k/100\n\nfrq_r = 1/(6.283*"
+"sqrt(L_r*C_r))\n\n\nfreq = freq_k_pct * frq_r"
   InitialState  "1"
   SystemState   ""
   TaskingMode   "1"
@@ -56,9 +56,9 @@ Plecs {
   ScriptsDialogGeometry ""
   ScriptsDialogSplitterPos "0"
   Schematic {
-    Location      [0, 490; 1080, 1188]
-    ZoomFactor    1.16513
-    SliderPosition [0, 0]
+    Location      [0, 208; 1080, 906]
+    ZoomFactor    1.33333
+    SliderPosition [111, 0]
     ShowBrowser   off
     BrowserWidth  158
     Component {
@@ -114,7 +114,7 @@ Plecs {
       Type          Inductor
       Name          "L3"
       Show          off
-      Position      [380, 210]
+      Position      [395, 210]
       Direction     left
       Flipped       off
       Parameter {
@@ -132,7 +132,7 @@ Plecs {
       Type          Capacitor
       Name          "C3"
       Show          off
-      Position      [325, 210]
+      Position      [300, 210]
       Direction     left
       Flipped       off
       Parameter {
@@ -273,7 +273,7 @@ Plecs {
       Type          Ammeter
       Name          "Am1"
       Show          off
-      Position      [660, 205]
+      Position      [595, 205]
       Direction     left
       Flipped       off
     }
@@ -284,27 +284,27 @@ Plecs {
       Position      [830, 170]
       Direction     up
       Flipped       off
-      Location      [98, 980; 958, 1573]
-      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAABp/wCAAAAA/sAAAAQAFoAbwBvA"
+      Location      [1513, 473; 2373, 1082]
+      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAAB1/wCAAAAA/sAAAAQAFoAbwBvA"
 "G0AQQByAGUAYQAAAAAA/////wAAAFkA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwIAAAFRAA"
-"ABSwAAAMgAAACN+wAAAAwAVAByAGEAYwBlAHMBAAAANQAAAacAAABjAP///wAAAAMAAANcAAAAhfw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAA1wAAABEAP///wAAAqIAAAGnAAAA"
+"ABSwAAAMgAAACN+wAAAAwAVAByAGEAYwBlAHMBAAAANQAAAdcAAABjAP///wAAAAMAAANcAAAAZfw"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAA1wAAABEAP///wAAAqIAAAHXAAAA"
 "BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
 "AAAAA=="
       SavedViews    "AAAAAgAAAAA="
-      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL+AMAAAAHAAAAC"
-"AAAAGQAAAAJAAAAZAAAAAMAAABkAAAABgAAAGQAAAAHAAAAZAAAAAQAAABkAAAABQAAAGQAAANcAA"
-"AACwEAAAEAAAAAAAAAAAAAAABk/////wAAAIEAAAAAAAAACwAAALoAAAABAAAAAAAAAGQAAAABAAA"
-"AAAAAAGQAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAB"
-"AAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAdoAAAABAAAAAAAAA+gAA"
-"AAAIw=="
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAC"
+"AAAAGQAAAAJAAAAZAAAAAIAAABkAAAAAwAAAGQAAAABAAAAZAAAAAYAAABkAAAABwAAAGQAAAAEAA"
+"AAZAAAAAUAAABkAAADTgAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAAC6AAA"
+"AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
+"AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
+"AKUAAAAAQAAAAAAAAPoAAAAACM="
       PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA"
 "AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
       Axes          "2"
       TimeRange     "0.03"
       ScrollingMode "1"
       SingleTimeAxis "1"
-      Open          "0"
+      Open          "1"
       Ts            "-1"
       SampleLimit   "0"
       XAxisLabel    ""
@@ -767,13 +767,6 @@ Plecs {
     }
     Connection {
       Type          Wire
-      SrcComponent  "C3"
-      SrcTerminal   2
-      DstComponent  "L3"
-      DstTerminal   1
-    }
-    Connection {
-      Type          Wire
       SrcComponent  "R2"
       SrcTerminal   2
       DstComponent  "C2"
@@ -824,25 +817,10 @@ Plecs {
       }
     }
     Connection {
-      Type          Wire
-      SrcComponent  "R1"
-      SrcTerminal   1
-      Points        [695, 205]
-      Branch {
-        Points        [755, 205]
-        DstComponent  "Vm3"
-        DstTerminal   1
-      }
-      Branch {
-        DstComponent  "Am1"
-        DstTerminal   2
-      }
-    }
-    Connection {
       Type          Signal
       SrcComponent  "Am1"
       SrcTerminal   3
-      Points        [660, 175]
+      Points        [595, 175]
       DstComponent  "Scope"
       DstTerminal   2
     }
@@ -931,28 +909,6 @@ Plecs {
     }
     Connection {
       Type          Wire
-      SrcComponent  "Am1"
-      SrcTerminal   1
-      Points        [630, 205]
-      Branch {
-        DstComponent  "R2"
-        DstTerminal   1
-      }
-      Branch {
-        Points        [560, 205]
-        Branch {
-          Points        [560, 295]
-          DstComponent  "D2"
-          DstTerminal   2
-        }
-        Branch {
-          DstComponent  "D1"
-          DstTerminal   2
-        }
-      }
-    }
-    Connection {
-      Type          Wire
       SrcComponent  "Tr3"
       SrcTerminal   3
       Points        [475, 205]
@@ -988,6 +944,49 @@ Plecs {
         }
       }
     }
+    Connection {
+      Type          Wire
+      SrcComponent  "R1"
+      SrcTerminal   1
+      Points        [695, 205]
+      Branch {
+        Points        [755, 205]
+        DstComponent  "Vm3"
+        DstTerminal   1
+      }
+      Branch {
+        Points        [630, 205]
+        Branch {
+          DstComponent  "R2"
+          DstTerminal   1
+        }
+        Branch {
+          DstComponent  "Am1"
+          DstTerminal   2
+        }
+      }
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "D2"
+      SrcTerminal   2
+      Points        [560, 295; 560, 205]
+      Branch {
+        DstComponent  "D1"
+        DstTerminal   2
+      }
+      Branch {
+        DstComponent  "Am1"
+        DstTerminal   1
+      }
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "L3"
+      SrcTerminal   1
+      DstComponent  "C3"
+      DstTerminal   2
+    }
     Annotation {
       Name          "<html><body>\n<p align=\"center\">Half-bridge LLC convert"
 "er with Analysis Tools</p></body></html>"
@@ -1017,4 +1016,4 @@ Plecs {
     Response      "v_loop/Response"
   }
 }
-DemoSignature "LUSFW7U/wVda2c2jA/GdK4GnFb3gImUbVy+YOqCxyao="
+DemoSignature "u3SBMeMPt/9yMcG0KCuro2QxeAb8z2HEeVWw5rVtKC0="
