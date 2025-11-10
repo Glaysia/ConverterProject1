@@ -52,9 +52,8 @@ DAC_HandleTypeDef hdac1;
 TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
-uint32_t g_tim1_pwm_frequency_khz = 100U;  /* Default PWM frequency in kHz */
-uint32_t g_tim1_pwm_duty_percent = 50U;    /* Duty cycle in percent */
-uint32_t g_tim1_deadtime_percent = 5U;     /* Dead-time as percentage of period */
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,6 +66,8 @@ static void MX_DAC1_Init(void);
 /* USER CODE BEGIN PFP */
 static uint32_t TIM1_GetTimerClockHz(void);
 static void TIM1_SetFrequencyHz(uint32_t freq_hz);
+void TIM1_SetDeadtimePercent(uint32_t percent);
+static uint32_t TIM1_DeadtimeTicksToRegister(uint32_t ticks);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -76,8 +77,8 @@ uint16_t PWM_Counter = 0;
 uint16_t DAC_Counter = 0;
 uint16_t dac_value = 0;
 static volatile uint16_t g_adc_last = 0; /* Updated in ADC IRQ */
-static uint32_t g_tim1_pwm_freq_hz = 500U; /* Start target at 500 Hz */
-static bool enable_printf = false;
+static uint32_t g_tim1_pwm_freq_hz = 226000U; /* Start target at 500 Hz */
+uint32_t g_tim1_deadtime_percent = 8U; /* Dead-time as percentage of period */
 /* USER CODE END 0 */
 
 /**
@@ -122,9 +123,12 @@ int main(void)
   HAL_ADC_Start_IT(&hadc1);
   /* Ensure TIM1 starts at 10 Hz initially */
   TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
+  TIM1_SetDeadtimePercent(g_tim1_deadtime_percent);
+  
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+  
   /* USER CODE END 2 */
 
   /* Initialize COM1 port (115200, 8 bits (7-bit data + 1 stop bit), no parity */
@@ -193,9 +197,9 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK3;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB3CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
@@ -402,10 +406,13 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  HAL_TIMEx_EnableDeadTimePreload(&htim1);
+  HAL_TIMEx_ConfigAsymmetricalDeadTime(&htim1, 200);
+  HAL_TIMEx_EnableAsymmetricalDeadTime(&htim1);
   sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
   sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
   sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.DeadTime = 200;
   sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
   sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
   sBreakDeadTimeConfig.BreakFilter = 0;
@@ -414,7 +421,7 @@ static void MX_TIM1_Init(void)
   sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
   sBreakDeadTimeConfig.Break2Filter = 0;
   sBreakDeadTimeConfig.Break2AFMode = TIM_BREAK_AFMODE_INPUT;
-  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_ENABLE;
   if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
   {
     Error_Handler();
@@ -540,7 +547,63 @@ static void TIM1_SetFrequencyHz(uint32_t freq_hz)
   __HAL_TIM_SET_COUNTER(&htim1, 0U);
   htim1.Instance->EGR |= TIM_EGR_UG;
 
+  TIM1_SetDeadtimePercent(g_tim1_deadtime_percent);
+
   if (was_enabled) __HAL_TIM_ENABLE(&htim1);
+}
+
+static uint32_t TIM1_DeadtimeTicksToRegister(uint32_t ticks)
+{
+  if (ticks <= 127U)
+  {
+    return ticks;
+  }
+  if (ticks <= 254U)
+  {
+    uint32_t encoded = ((ticks + 1U) / 2U) + 64U;
+    return (encoded > 191U) ? 191U : encoded;
+  }
+  if (ticks <= 504U)
+  {
+    uint32_t encoded = ((ticks + 7U) / 8U) + 160U;
+    return (encoded > 223U) ? 223U : encoded;
+  }
+  if (ticks <= 1008U)
+  {
+    uint32_t encoded = ((ticks + 15U) / 16U) + 192U;
+    return (encoded > 255U) ? 255U : encoded;
+  }
+  return 255U;
+}
+
+void TIM1_SetDeadtimePercent(uint32_t percent)
+{
+  if (percent > 100U)
+  {
+    percent = 100U;
+  }
+  g_tim1_deadtime_percent = percent;
+
+  uint32_t arr_plus1 = __HAL_TIM_GET_AUTORELOAD(&htim1) + 1U;
+  uint32_t factor =
+      ((htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED1) ||
+       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED2) ||
+       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED3))
+          ? 2U
+          : 1U;
+
+  uint64_t period_ticks = (uint64_t)arr_plus1 * (uint64_t)factor;
+  uint64_t desired_ticks = (period_ticks * percent) / 100ULL;
+  if (desired_ticks > 1008ULL)
+  {
+    desired_ticks = 1008ULL;
+  }
+
+  uint32_t deadtime_reg = TIM1_DeadtimeTicksToRegister((uint32_t)desired_ticks);
+
+  HAL_TIMEx_ConfigDeadTime(&htim1, deadtime_reg);
+  HAL_TIMEx_ConfigAsymmetricalDeadTime(&htim1, deadtime_reg); /* keep falling/rising edges aligned */
+  htim1.Instance->EGR |= TIM_EGR_COMG; /* latch new DT when preload is on */
 }
 /* USER CODE END 4 */
 
