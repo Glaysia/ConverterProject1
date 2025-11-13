@@ -37,6 +37,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define ADCBUF_MAX 100
+#define PWM_SAMPLE_COUNT 1000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -65,23 +66,9 @@ volatile uint16_t tail=0;
 uint16_t adc_buf[ADCBUF_MAX];
 
 
-uint16_t Counter_1kHz=0;
-uint8_t pulse_index=0;
 
-uint16_t pulse_coeff=125;
 
-static const uint8_t pulse_values[100] = {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-  20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-  30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-  40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
-  50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-  60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
-  70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
-  80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
-  90, 91, 92, 93, 94, 95, 96, 97, 98, 99
-};
+static uint16_t pulse_values[PWM_SAMPLE_COUNT];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,6 +80,7 @@ static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 static void UART2_DMA_Ready(void);
+static void InitPulseValues(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -135,12 +123,12 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   UART2_DMA_Ready();
+  InitPulseValues();
 
   // HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADCBUF_MAX);
-  // HAL_TIM_Base_Start_DMA(&htim3, (uint32_t*)&Counter_1kHz, 1);
-  HAL_TIM_Base_Start_IT(&htim3);
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
-  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_4, (uint32_t*)pulse_values, 100);
+  // HAL_TIM_Base_Start_IT(&htim3);
+  // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_4, (uint32_t*)pulse_values, PWM_SAMPLE_COUNT);
 
   /* USER CODE END 2 */
 
@@ -422,13 +410,24 @@ static void UART2_DMA_Ready(void){
   HAL_UART_Receive_DMA(&huart2, UartRxDMA_Buf, RXBUF_MAX);
 }
 
+static void InitPulseValues(void)
+{
+  /* 0%~100% 듀티를 1000칸에 선형 분포로 채움 */
+  uint16_t max_pulse = __HAL_TIM_GET_AUTORELOAD(&htim3);
+  for(uint16_t i = 0; i < PWM_SAMPLE_COUNT; i++)
+  {
+    uint16_t percent = (PWM_SAMPLE_COUNT > 1)
+                         ? (i * 100) / (PWM_SAMPLE_COUNT - 1)
+                         : 100;
+    pulse_values[i] = (max_pulse * percent) / 100;
+  }
+}
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
   if(huart->Instance == USART2){
     // Handle full buffer reception if needed
   }
 }
-
-
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
   if(hadc->Instance == ADC1){
@@ -441,25 +440,6 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
     HAL_UART_Transmit(&huart2, (uint8_t *)line, len, 50);
 
     // Handle ADC conversion complete if needed
-  }
-}
-
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-  if(htim->Instance == TIM3){
-    Counter_1kHz++;
-    if(Counter_1kHz >= 1000){
-      Counter_1kHz = 0;
-      // 1 second tasks can be placed here
-    }
-
-    if(Counter_1kHz>= pulse_coeff){
-      Counter_1kHz = 0;
-      pulse_index++;
-      if(pulse_index >= 100) pulse_index = 0;
-    }
-
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pulse_values[pulse_index]);
   }
 }
 /* USER CODE END 4 */
