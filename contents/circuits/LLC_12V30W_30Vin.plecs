@@ -58,7 +58,7 @@ Plecs {
   Schematic {
     Location      [0, 208; 1080, 906]
     ZoomFactor    1.33333
-    SliderPosition [111, 0]
+    SliderPosition [-1, 0]
     ShowBrowser   off
     BrowserWidth  158
     Component {
@@ -132,7 +132,7 @@ Plecs {
       Type          Capacitor
       Name          "C3"
       Show          off
-      Position      [300, 210]
+      Position      [360, 210]
       Direction     left
       Flipped       off
       Parameter {
@@ -284,20 +284,20 @@ Plecs {
       Position      [830, 170]
       Direction     up
       Flipped       off
-      Location      [1513, 473; 2373, 1082]
-      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAAB1/wCAAAAA/sAAAAQAFoAbwBvA"
+      Location      [59, 972; 919, 1589]
+      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAAB3/wCAAAAA/sAAAAQAFoAbwBvA"
 "G0AQQByAGUAYQAAAAAA/////wAAAFkA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwIAAAFRAA"
-"ABSwAAAMgAAACN+wAAAAwAVAByAGEAYwBlAHMBAAAANQAAAdcAAABjAP///wAAAAMAAANcAAAAZfw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAA1wAAABEAP///wAAAqIAAAHXAAAA"
+"ABSwAAAMgAAACN+wAAAAwAVAByAGEAYwBlAHMBAAAANQAAAd8AAABjAP///wAAAAMAAANcAAAAZfw"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAA1wAAABEAP///wAAAqIAAAHfAAAA"
 "BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
 "AAAAA=="
       SavedViews    "AAAAAgAAAAA="
-      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAC"
-"AAAAGQAAAAJAAAAZAAAAAIAAABkAAAAAwAAAGQAAAABAAAAZAAAAAYAAABkAAAABwAAAGQAAAAEAA"
-"AAZAAAAAUAAABkAAADTgAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAAC6AAA"
-"AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
-"AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
-"AKUAAAAAQAAAAAAAAPoAAAAACM="
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL+AMAAAAHAAAAA"
+"wAAAGQAAAAGAAAAZAAAAAcAAABkAAAABAAAAGQAAAAFAAAAZAAAAAgAAABkAAAACQAAAGQAAANOAA"
+"AACwEAAAEAAAAAAAAAAAAAAABk/////wAAAIEAAAAAAAAACwAAALoAAAABAAAAAAAAAGQAAAABAAA"
+"AAAAAAGQAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAB"
+"AAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAcwAAAABAAAAAAAAA+gAA"
+"AAAIw=="
       PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA"
 "AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
       Axes          "2"
@@ -486,20 +486,20 @@ Plecs {
       Position      [275, 30]
       Direction     up
       Flipped       off
-      Location      [559, 508; 1228, 975]
+      Location      [193, 760; 862, 1272]
       State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAbwBvA"
 "G0AQQByAGUAYQAAAAAA/////wAAAIEA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
 "///wAAAGMA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABjAP///wAAAAMAAAKdAAAApfw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAAp0AAABEAP///wAAAp0AAAEJAAAA"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAAp0AAABEAP///wAAAp0AAAE2AAAA"
 "BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
 "AAAAA=="
       SavedViews    "AAAAAgAAAAA="
-      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAB"
-"AAAAGQAAAADAAAAZAAAAAIAAABkAAAAAQAAAGQAAAAJAAAAZAAAAAgAAABkAAAABwAAAGQAAAAGAA"
-"AAZAAAAAUAAABkAAACnQAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAABcAAA"
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAA"
+"wAAAGQAAAABAAAAZAAAAAYAAABkAAAABwAAAGQAAAAEAAAAZAAAAAUAAABkAAAACAAAAGQAAAAJAA"
+"AAZAAAAAIAAABkAAACnQAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAAC6AAA"
 "AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
 "AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
-"AJBAAAAAQAAAAAAAAPoAA=="
+"AHjAAAAAQAAAAAAAAPoAAAAACM="
       PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA"
 "AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 "=="
@@ -507,7 +507,7 @@ Plecs {
       TimeRange     "0.03"
       ScrollingMode "1"
       SingleTimeAxis "1"
-      Open          "0"
+      Open          "1"
       Ts            "-1"
       SampleLimit   "0"
       XAxisLabel    ""
@@ -587,7 +587,7 @@ Plecs {
       Type          Voltmeter
       Name          "Vm4"
       Show          off
-      Position      [120, 160]
+      Position      [325, 270]
       Direction     up
       Flipped       off
     }
@@ -741,21 +741,21 @@ Plecs {
       SrcTerminal   2
       Points        [425, 290]
       Branch {
-        Points        [280, 290]
+        Points        [325, 290]
         Branch {
-          Points        [120, 290]
+          Points        [280, 290]
           Branch {
             Points        [70, 290]
             DstComponent  "V_dc"
             DstTerminal   2
           }
           Branch {
-            DstComponent  "Vm4"
+            DstComponent  "FETD1"
             DstTerminal   2
           }
         }
         Branch {
-          DstComponent  "FETD1"
+          DstComponent  "Vm4"
           DstTerminal   2
         }
       }
@@ -812,8 +812,15 @@ Plecs {
         DstTerminal   2
       }
       Branch {
-        DstComponent  "C3"
-        DstTerminal   1
+        Points        [325, 210]
+        Branch {
+          DstComponent  "C3"
+          DstTerminal   1
+        }
+        Branch {
+          DstComponent  "Vm4"
+          DstTerminal   1
+        }
       }
     }
     Connection {
@@ -823,20 +830,6 @@ Plecs {
       Points        [595, 175]
       DstComponent  "Scope"
       DstTerminal   2
-    }
-    Connection {
-      Type          Wire
-      SrcComponent  "V_dc"
-      SrcTerminal   1
-      Points        [70, 140; 120, 140]
-      Branch {
-        DstComponent  "Am2"
-        DstTerminal   1
-      }
-      Branch {
-        DstComponent  "Vm4"
-        DstTerminal   1
-      }
     }
     Connection {
       Type          Wire
@@ -858,7 +851,7 @@ Plecs {
       Type          Signal
       SrcComponent  "Vm4"
       SrcTerminal   3
-      Points        [200, 160; 200, 30]
+      Points        [365, 270; 365, 150; 220, 150; 220, 30]
       DstComponent  "Scope2"
       DstTerminal   2
     }
@@ -982,6 +975,14 @@ Plecs {
     }
     Connection {
       Type          Wire
+      SrcComponent  "V_dc"
+      SrcTerminal   1
+      Points        [70, 140]
+      DstComponent  "Am2"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Wire
       SrcComponent  "L3"
       SrcTerminal   1
       DstComponent  "C3"
@@ -1016,4 +1017,4 @@ Plecs {
     Response      "v_loop/Response"
   }
 }
-DemoSignature "u3SBMeMPt/9yMcG0KCuro2QxeAb8z2HEeVWw5rVtKC0="
+DemoSignature "ykdXz3FO7pmxu23ct0CX7tlUMGXCI2tZXGQOVe+fpUs="
