@@ -23,15 +23,15 @@ Plecs {
   MaxConsecutiveZCs "1000"
   AlgebraicLoopWithStateMachineMsg "2"
   AssertionAction "1"
-  InitializationCommands "%% Electrical\n\nV_DC = 10;\t\t     %[V]\nn_prim = 1"
-";\nn_sndry = 2;\n\n%Primary Side\nL_r = 2.7e-6;\t\t\t  %[H]\nL_m = 13.7e-6;\t"
+  InitializationCommands "%% Electrical\n\nV_DC = 32;\t\t     %[V]\nn_prim = 1"
+";\nn_sndry = 1;\n\n%Primary Side\nL_r = 2.7e-6;\t\t\t  %[H]\nL_m = 13.7e-6;\t"
 "\t  %[H]\nC_r = 235e-9;\t\t\t  %[F]\n\n%Secondary Side\nC_o = 560e-6;\t\t  %["
 "F]\nC_v_init = 0;\t\t  %[V]\nR_o = 2.5;\t\t\t  %[Ohm]\nESR = 30e-3;\t\t     %"
 "[Ohm]\n\n% V_out_desired = 5; %[V]\n\n%% Controller\n\nR1 = 19.7e3;\nR2 = R1/"
 "3;\n\n% V_ref = V_out_desired * R2 / (R1 + R2); % reference voltage\n\n%% Typ"
 "e 2 Compensator\nType2.wz1 = 2*pi*4.2e3; % frequency of type2 zero\nType2.wp0"
 " = 3.2e3; % DC gain of type 2 compensator\nType2.wp1 = 2*pi*8.2e3; % frequenc"
-"y of type2 pole\n\nfreq_k = 113\nfreq_k_pct = freq_k/100\n\nfrq_r = 1/(6.283*"
+"y of type2 pole\n\nfreq_k = 150\nfreq_k_pct = freq_k/100\n\nfrq_r = 1/(6.283*"
 "sqrt(L_r*C_r))\n\n\nfreq = freq_k_pct * frq_r"
   InitialState  "1"
   SystemState   ""
@@ -57,8 +57,8 @@ Plecs {
   ScriptsDialogSplitterPos "0"
   Schematic {
     Location      [0, 208; 1080, 906]
-    ZoomFactor    1.33333
-    SliderPosition [-1, 0]
+    ZoomFactor    0.889698
+    SliderPosition [0, 0]
     ShowBrowser   off
     BrowserWidth  158
     Component {
@@ -284,7 +284,7 @@ Plecs {
       Position      [830, 170]
       Direction     up
       Flipped       off
-      Location      [59, 972; 919, 1589]
+      Location      [59, 947; 919, 1564]
       State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAAB3/wCAAAAA/sAAAAQAFoAbwBvA"
 "G0AQQByAGUAYQAAAAAA/////wAAAFkA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwIAAAFRAA"
 "ABSwAAAMgAAACN+wAAAAwAVAByAGEAYwBlAHMBAAAANQAAAd8AAABjAP///wAAAAMAAANcAAAAZfw"
@@ -1017,4 +1017,4 @@ Plecs {
     Response      "v_loop/Response"
   }
 }
-DemoSignature "ykdXz3FO7pmxu23ct0CX7tlUMGXCI2tZXGQOVe+fpUs="
+DemoSignature "a42XlPsCAjGLje51wsxxljKj700BTkflCP7fzBc7PTc="

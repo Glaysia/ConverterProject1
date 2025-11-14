@@ -1,3 +1,16 @@
+[AC Analysis]
+{
+   Npanes: 1
+   {
+      traces: 1 {524290,0,"V(n004)"}
+      X: ('K',0,300000,20000,520000)
+      Y[0]: (' ',0,0,3,30)
+      Y[1]: (' ',0,-100,20,100)
+      Log: 0 0 0
+      PltMag: 1
+      PltPhi: 1 0
+   }
+}
 [Transient Analysis]
 {
    Npanes: 1
