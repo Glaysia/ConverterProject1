@@ -1,5 +1,5 @@
 Plecs {
-  Name          "LLC_12V30W_30Vin"
+  Name          "LLC_10Vi5Vo"
   Version       "4.6"
   CircuitModel  "ContStateSpace"
   StartTime     "0.0"
@@ -23,16 +23,19 @@ Plecs {
   MaxConsecutiveZCs "1000"
   AlgebraicLoopWithStateMachineMsg "2"
   AssertionAction "1"
-  InitializationCommands "%% Electrical\n\nV_DC = 32;\t\t     %[V]\nn_prim = 1"
-";\nn_sndry = 1;\n\n%Primary Side\nL_r = 2.7e-6;\t\t\t  %[H]\nL_m = 13.7e-6;\t"
-"\t  %[H]\nC_r = 235e-9;\t\t\t  %[F]\n\n%Secondary Side\nC_o = 560e-6;\t\t  %["
-"F]\nC_v_init = 0;\t\t  %[V]\nR_o = 2.5;\t\t\t  %[Ohm]\nESR = 30e-3;\t\t     %"
-"[Ohm]\n\n% V_out_desired = 5; %[V]\n\n%% Controller\n\nR1 = 19.7e3;\nR2 = R1/"
-"3;\n\n% V_ref = V_out_desired * R2 / (R1 + R2); % reference voltage\n\n%% Typ"
-"e 2 Compensator\nType2.wz1 = 2*pi*4.2e3; % frequency of type2 zero\nType2.wp0"
-" = 3.2e3; % DC gain of type 2 compensator\nType2.wp1 = 2*pi*8.2e3; % frequenc"
-"y of type2 pole\n\nfreq_k = 150\nfreq_k_pct = freq_k/100\n\nfrq_r = 1/(6.283*"
-"sqrt(L_r*C_r))\n\n\nfreq = freq_k_pct * frq_r"
+  InitializationCommands "%% Electrical\n\nV_DC = 10;\t\t     %[V]\nn_prim = 2"
+";\nn_sndry = 7;\n\n%Primary Side\nL_r = 12e-6;\t\t\t  %[H]\nL_m = 80e-6;\t\t "
+" %[H]\nC_r = 100e-9;\t\t\t  %[F]\n\n%Secondary Side\nC_o = 1e-3;\t\t  %[F]\nC"
+"_v_init = 0;\t\t  %[V]\nR_o = 2.5;\t\t\t  %[Ohm]\nESR = 30e-3;\t\t     %[Ohm]"
+"\n\n% V_out_desired = 5; %[V]\n\n%% Controller\n\nR1 = 19.7e3;\nR2 = R1/3;\n"
+"\n% V_ref = V_out_desired * R2 / (R1 + R2); % reference voltage\n\n%% Type 2 "
+"Compensator\nType2.wz1 = 2*pi*4.2e3; % frequency of type2 zero\nType2.wp0 = 3"
+".2e3; % DC gain of type 2 compensator\nType2.wp1 = 2*pi*8.2e3; % frequency of"
+" type2 pole\n\nfreq_k = 102.5;\nfreq_k_pct = freq_k/100;\nfrq_r = 1/(6.283*sq"
+"rt(L_r*C_r));\n\nif V_DC < 12\n    dead_pct = 25;\nelseif V_DC < 16\n    dead"
+"_pct = 20;\nelseif V_DC < 24\n    dead_pct = 15;\nelseif V_DC < 28\n    dead_"
+"pct = 10;\nelse\n    dead_pct = 5;\nend\n\nduty_cycle_rat = 0.01*(100-dead_pc"
+"t)/2;\n\nfreq = freq_k_pct * frq_r;"
   InitialState  "1"
   SystemState   ""
   TaskingMode   "1"
@@ -56,7 +59,7 @@ Plecs {
   ScriptsDialogGeometry ""
   ScriptsDialogSplitterPos "0"
   Schematic {
-    Location      [0, 208; 1080, 906]
+    Location      [1392, 188; 2472, 886]
     ZoomFactor    0.889698
     SliderPosition [0, 0]
     ShowBrowser   off
@@ -281,30 +284,30 @@ Plecs {
       Type          Scope
       Name          "Scope"
       Show          on
-      Position      [830, 170]
+      Position      [835, 175]
       Direction     up
       Flipped       off
-      Location      [59, 947; 919, 1564]
-      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAAB3/wCAAAAA/sAAAAQAFoAbwBvA"
+      Location      [1572, 446; 2432, 1079]
+      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAAB7/wCAAAAA/sAAAAQAFoAbwBvA"
 "G0AQQByAGUAYQAAAAAA/////wAAAFkA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwIAAAFRAA"
-"ABSwAAAMgAAACN+wAAAAwAVAByAGEAYwBlAHMBAAAANQAAAd8AAABjAP///wAAAAMAAANcAAAAZfw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAA1wAAABEAP///wAAAqIAAAHfAAAA"
+"ABSwAAAMgAAACN+wAAAAwAVAByAGEAYwBlAHMBAAAANQAAAe8AAABjAP///wAAAAMAAANcAAAAZfw"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAA1wAAABEAP///wAAAqIAAAHvAAAA"
 "BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
 "AAAAA=="
       SavedViews    "AAAAAgAAAAA="
-      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL+AMAAAAHAAAAA"
-"wAAAGQAAAAGAAAAZAAAAAcAAABkAAAABAAAAGQAAAAFAAAAZAAAAAgAAABkAAAACQAAAGQAAANOAA"
-"AACwEAAAEAAAAAAAAAAAAAAABk/////wAAAIEAAAAAAAAACwAAALoAAAABAAAAAAAAAGQAAAABAAA"
-"AAAAAAGQAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAB"
-"AAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAcwAAAABAAAAAAAAA+gAA"
-"AAAIw=="
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAA"
+"wAAAGQAAAACAAAAZAAAAAEAAABkAAAACQAAAGQAAAAIAAAAZAAAAAcAAABkAAAABgAAAGQAAAAFAA"
+"AAZAAAAAQAAABkAAADTgAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAAC6AAA"
+"AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
+"AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
+"AKUAAAAAQAAAAAAAAPoAAAAACM="
       PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA"
 "AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
       Axes          "2"
       TimeRange     "0.03"
       ScrollingMode "1"
       SingleTimeAxis "1"
-      Open          "1"
+      Open          "0"
       Ts            "-1"
       SampleLimit   "0"
       XAxisLabel    ""
@@ -383,7 +386,7 @@ Plecs {
       }
       Parameter {
         Variable      "DutyCycle"
-        Value         "0.47"
+        Value         "duty_cycle_rat"
         Show          off
       }
       Parameter {
@@ -404,17 +407,17 @@ Plecs {
       Position      [325, 350]
       Direction     up
       Flipped       off
-      Location      [347, 787; 1080, 1026]
+      Location      [1421, 615; 2154, 870]
       State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAbwBvA"
 "G0AQQByAGUAYQAAAAAA/////wAAAFkA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
 "///wAAAGMA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABjAP///wAAAAMAAAAAAAAAAPw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAP////8AAABEAP///wAAAt0AAADQAAAA"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAP////8AAABEAP///wAAAt0AAADgAAAA"
 "BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
 "AAAAA=="
       SavedViews    "AAAAAgAAAAA="
-      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAC"
-"AAAAGQAAAAJAAAAZAAAAAIAAABkAAAAAwAAAGQAAAABAAAAZAAAAAYAAABkAAAABwAAAGQAAAAEAA"
-"AAZAAAAAUAAABkAAAAugAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAACXAAA"
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAA"
+"wAAAGQAAAACAAAAZAAAAAEAAABkAAAACQAAAGQAAAAIAAAAZAAAAAcAAABkAAAABgAAAGQAAAAFAA"
+"AAZAAAAAQAAABkAAAAugAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAACXAAA"
 "AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
 "AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
 "AAjAAAAAQAAAAAAAAPoAP////8="
@@ -486,17 +489,17 @@ Plecs {
       Position      [275, 30]
       Direction     up
       Flipped       off
-      Location      [193, 760; 862, 1272]
+      Location      [193, 760; 862, 1280]
       State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAbwBvA"
 "G0AQQByAGUAYQAAAAAA/////wAAAIEA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
-"///wAAAGMA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABjAP///wAAAAMAAAKdAAAApfw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAAp0AAABEAP///wAAAp0AAAE2AAAA"
+"///wAAAGMA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABjAP///wAAAAMAAAKdAAAAdfw"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQBAAAAAAAAAp0AAABEAP///wAAAp0AAAFuAAAA"
 "BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
 "AAAAA=="
       SavedViews    "AAAAAgAAAAA="
       HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAA"
-"wAAAGQAAAABAAAAZAAAAAYAAABkAAAABwAAAGQAAAAEAAAAZAAAAAUAAABkAAAACAAAAGQAAAAJAA"
-"AAZAAAAAIAAABkAAACnQAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAAC6AAA"
+"wAAAGQAAAACAAAAZAAAAAEAAABkAAAACQAAAGQAAAAIAAAAZAAAAAcAAABkAAAABgAAAGQAAAAFAA"
+"AAZAAAAAQAAABkAAACnQAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAAC6AAA"
 "AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
 "AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
 "AHjAAAAAQAAAAAAAAPoAAAAACM="
@@ -507,7 +510,7 @@ Plecs {
       TimeRange     "0.03"
       ScrollingMode "1"
       SingleTimeAxis "1"
-      Open          "1"
+      Open          "0"
       Ts            "-1"
       SampleLimit   "0"
       XAxisLabel    ""
@@ -797,7 +800,7 @@ Plecs {
         DstTerminal   1
       }
       Branch {
-        Points        [785, 165]
+        Points        [785, 170]
         DstComponent  "Scope"
         DstTerminal   1
       }
@@ -827,7 +830,7 @@ Plecs {
       Type          Signal
       SrcComponent  "Am1"
       SrcTerminal   3
-      Points        [595, 175]
+      Points        [595, 180]
       DstComponent  "Scope"
       DstTerminal   2
     }
@@ -1017,4 +1020,4 @@ Plecs {
     Response      "v_loop/Response"
   }
 }
-DemoSignature "a42XlPsCAjGLje51wsxxljKj700BTkflCP7fzBc7PTc="
+DemoSignature "nKvWS3lYDlX3nO13LIgxmKzHmmZFICKErCH4V7KOsnA="
