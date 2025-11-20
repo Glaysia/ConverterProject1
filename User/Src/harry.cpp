@@ -8,12 +8,16 @@ extern ADC_HandleTypeDef hadc1;
 extern DAC_HandleTypeDef hdac1;
 extern TIM_HandleTypeDef htim1;
 
+// main.c에 정의된 전역 변수들을 참조
 extern uint16_t PC13_Counter;
 extern uint16_t PWM_Counter;
 extern uint16_t DAC_Counter;
 extern uint16_t dac_value;
 extern uint32_t g_tim1_pwm_freq_hz;
 extern uint32_t g_tim1_deadtime_percent;
+
+// static 변수: 이전 데드타임 퍼센트 저장용
+static uint32_t tim1_deadtime_percent_prev;
 
 /* C++ 전용 Harry 클래스: 내부에서만 사용 */
 class Harry {
@@ -176,13 +180,17 @@ extern "C" uint32_t TIM1_DeadtimeTicksToRegister(uint32_t ticks)
   return 255U;
 }
 
+extern "C" uint32_t TIM1_GetDeadtimePercent(void)
+{
+  return tim1_deadtime_percent_prev;
+}
+
 extern "C" void TIM1_SetDeadtimePercent(uint32_t percent)
 {
   if (percent > 100U)
   {
     percent = 100U;
   }
-  g_tim1_deadtime_percent = percent;
 
   uint32_t arr_plus1 = __HAL_TIM_GET_AUTORELOAD(&htim1) + 1U;
   uint32_t factor =
@@ -204,5 +212,5 @@ extern "C" void TIM1_SetDeadtimePercent(uint32_t percent)
   HAL_TIMEx_ConfigDeadTime(&htim1, deadtime_reg);
   HAL_TIMEx_ConfigAsymmetricalDeadTime(&htim1, deadtime_reg); /* keep falling/rising edges aligned */
   htim1.Instance->EGR |= TIM_EGR_COMG; /* latch new DT when preload is on */
+  tim1_deadtime_percent_prev = percent;
 }
-

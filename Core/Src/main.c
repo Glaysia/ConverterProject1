@@ -93,8 +93,8 @@ uint16_t PWM_Counter = 0;
 uint16_t DAC_Counter = 0;
 uint16_t dac_value = 0;
 volatile uint16_t g_adc_last = 0; /* Updated in ADC IRQ */
-uint32_t g_tim1_pwm_freq_hz = 150000U; /* Start target at 150 kHz */
-uint32_t g_tim1_deadtime_percent = 10U; /* Dead-time as percentage of period */
+volatile uint32_t g_tim1_pwm_freq_hz = 150000U; /* Start target at 150 kHz */
+volatile uint32_t g_tim1_deadtime_percent = 10U; /* Dead-time as percentage of period */
 /* USER CODE END 0 */
 
 /**

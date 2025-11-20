@@ -32,9 +32,10 @@ uint32_t TIM1_GetTimerClockHz(void);
 uint32_t TIM1_GetFrequencyHz(void);
 void TIM1_SetFrequencyHz(uint32_t freq_hz);
 uint32_t TIM1_DeadtimeTicksToRegister(uint32_t ticks);
+
+uint32_t TIM1_GetDeadtimePercent(void);
 void TIM1_SetDeadtimePercent(uint32_t percent);
 
 #ifdef __cplusplus
 }
 #endif
-

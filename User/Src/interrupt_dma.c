@@ -15,6 +15,8 @@ extern uint16_t PWM_Counter;
 extern uint16_t DAC_Counter;
 extern uint16_t dac_value;
 extern uint32_t g_tim1_pwm_freq_hz;
+extern uint32_t g_tim1_deadtime_percent;
+
 
 /**
  * @brief ADC 변환 완료 인터럽트 콜백
@@ -51,7 +53,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if (before_freq_hz != g_tim1_pwm_freq_hz){
             TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
         }
-        // 
+        uint32_t before_deadtime_percent = TIM1_GetDeadtimePercent();
+        if (before_deadtime_percent != g_tim1_deadtime_percent){
+            TIM1_SetDeadtimePercent(g_tim1_deadtime_percent);
+        }
     }
 }
 
@@ -77,4 +82,3 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
         // enable_printf = !enable_printf;
     }
 }
-
