@@ -14,6 +14,22 @@
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
+  *//* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2025 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -21,9 +37,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "stm32h5xx_hal.h"
+#include "harry.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -68,10 +83,7 @@ static void MX_TIM1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_DAC1_Init(void);
 /* USER CODE BEGIN PFP */
-static uint32_t TIM1_GetTimerClockHz(void);
-static void TIM1_SetFrequencyHz(uint32_t freq_hz);
-void TIM1_SetDeadtimePercent(uint32_t percent);
-static uint32_t TIM1_DeadtimeTicksToRegister(uint32_t ticks);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -80,9 +92,9 @@ uint16_t PC13_Counter = 0;
 uint16_t PWM_Counter = 0;
 uint16_t DAC_Counter = 0;
 uint16_t dac_value = 0;
-static volatile uint16_t g_adc_last = 0; /* Updated in ADC IRQ */
-static uint32_t g_tim1_pwm_freq_hz = 500000U; /* Start target at 500 Hz */
-uint32_t g_tim1_deadtime_percent = 8U; /* Dead-time as percentage of period */
+volatile uint16_t g_adc_last = 0; /* Updated in ADC IRQ */
+uint32_t g_tim1_pwm_freq_hz = 150000U; /* Start target at 150 kHz */
+uint32_t g_tim1_deadtime_percent = 10U; /* Dead-time as percentage of period */
 /* USER CODE END 0 */
 
 /**
@@ -119,20 +131,10 @@ int main(void)
   MX_ADC1_Init();
   MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
-  /* Start DAC and set initial output (0V) */
-  if (HAL_DAC_Start(&hdac1, DAC_CHANNEL_2) == HAL_OK) {
-    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+  if (!user_init()) {
+    Error_Handler();
   }
-  /* Start ADC in interrupt mode (continuous conversions) */
-  HAL_ADC_Start_IT(&hadc1);
-  /* Ensure TIM1 starts at 10 Hz initially */
-  TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
-  TIM1_SetDeadtimePercent(g_tim1_deadtime_percent);
-  
-  HAL_TIM_Base_Start_IT(&htim1);
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
-  
+
   /* USER CODE END 2 */
 
   /* Initialize COM1 port (115200, 8 bits (7-bit data + 1 stop bit), no parity */
@@ -149,7 +151,8 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-
+    // HAL_Delay(500);
+    // Harry_printStudentId();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -509,106 +512,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
   }
 }
 /* Add helper functions for PWM frequency handling */
-static uint32_t TIM1_GetTimerClockHz(void)
-{
-  RCC_ClkInitTypeDef clk_config = {0};
-  uint32_t flash_latency = 0;
-  HAL_RCC_GetClockConfig(&clk_config, &flash_latency);
 
-  uint32_t pclk2 = HAL_RCC_GetPCLK2Freq();
-  if (pclk2 == 0U) return 0U;
-  return (clk_config.APB2CLKDivider == RCC_HCLK_DIV1) ? pclk2 : (pclk2 * 2U);
-}
-
-static void TIM1_SetFrequencyHz(uint32_t freq_hz)
-{
-  if (freq_hz == 0U) return;
-  uint32_t timer_clk_hz = TIM1_GetTimerClockHz();
-  if (timer_clk_hz == 0U) return;
-
-  uint32_t factor =
-      ((htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED1) ||
-       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED2) ||
-       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED3)) ? 2U : 1U;
-
-  uint64_t denom_for_psc = (uint64_t)factor * 65536ULL * (uint64_t)freq_hz;
-  uint64_t presc_plus1 = (denom_for_psc == 0ULL) ? 1ULL : ((uint64_t)timer_clk_hz + denom_for_psc - 1ULL) / denom_for_psc;
-  if (presc_plus1 < 1ULL) presc_plus1 = 1ULL;
-  if (presc_plus1 > 65536ULL) presc_plus1 = 65536ULL;
-
-  uint64_t denom = (uint64_t)factor * presc_plus1 * (uint64_t)freq_hz;
-  if (denom == 0ULL) return;
-  uint64_t arr_plus1 = ((uint64_t)timer_clk_hz + (denom / 2ULL)) / denom; /* rounded */
-  if (arr_plus1 < 1ULL) arr_plus1 = 1ULL;
-  if (arr_plus1 > 65536ULL) arr_plus1 = 65536ULL;
-
-  uint32_t was_enabled = (htim1.Instance->CR1 & TIM_CR1_CEN);
-  if (was_enabled) __HAL_TIM_DISABLE(&htim1);
-
-  __HAL_TIM_SET_PRESCALER(&htim1, (uint32_t)(presc_plus1 - 1ULL));
-  __HAL_TIM_SET_AUTORELOAD(&htim1, (uint32_t)(arr_plus1 - 1ULL));
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, (uint32_t)(arr_plus1 / 2ULL)); /* ~50% duty */
-  __HAL_TIM_SET_COUNTER(&htim1, 0U);
-  htim1.Instance->EGR |= TIM_EGR_UG;
-
-  TIM1_SetDeadtimePercent(g_tim1_deadtime_percent);
-
-  if (was_enabled) __HAL_TIM_ENABLE(&htim1);
-}
-
-static uint32_t TIM1_DeadtimeTicksToRegister(uint32_t ticks)
-{
-  if (ticks <= 127U)
-  {
-    return ticks;
-  }
-  if (ticks <= 254U)
-  {
-    uint32_t encoded = ((ticks + 1U) / 2U) + 64U;
-    return (encoded > 191U) ? 191U : encoded;
-  }
-  if (ticks <= 504U)
-  {
-    uint32_t encoded = ((ticks + 7U) / 8U) + 160U;
-    return (encoded > 223U) ? 223U : encoded;
-  }
-  if (ticks <= 1008U)
-  {
-    uint32_t encoded = ((ticks + 15U) / 16U) + 192U;
-    return (encoded > 255U) ? 255U : encoded;
-  }
-  return 255U;
-}
-
-void TIM1_SetDeadtimePercent(uint32_t percent)
-{
-  if (percent > 100U)
-  {
-    percent = 100U;
-  }
-  g_tim1_deadtime_percent = percent;
-
-  uint32_t arr_plus1 = __HAL_TIM_GET_AUTORELOAD(&htim1) + 1U;
-  uint32_t factor =
-      ((htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED1) ||
-       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED2) ||
-       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED3))
-          ? 2U
-          : 1U;
-
-  uint64_t period_ticks = (uint64_t)arr_plus1 * (uint64_t)factor;
-  uint64_t desired_ticks = (period_ticks * percent) / 100ULL;
-  if (desired_ticks > 1008ULL)
-  {
-    desired_ticks = 1008ULL;
-  }
-
-  uint32_t deadtime_reg = TIM1_DeadtimeTicksToRegister((uint32_t)desired_ticks);
-
-  HAL_TIMEx_ConfigDeadTime(&htim1, deadtime_reg);
-  HAL_TIMEx_ConfigAsymmetricalDeadTime(&htim1, deadtime_reg); /* keep falling/rising edges aligned */
-  htim1.Instance->EGR |= TIM_EGR_COMG; /* latch new DT when preload is on */
-}
 /* USER CODE END 4 */
 
 /**
@@ -641,7 +545,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-#ifdef __cplusplus
-}
-#endif
