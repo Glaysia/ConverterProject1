@@ -1,5 +1,8 @@
 #include "interrupt_dma.h"
 #include "main.h"
+#include "harry.h"
+#include "stm32h533xx.h"
+#include <stdint.h>
 
 /* main.c에 정의된 전역 변수들을 참조 */
 extern ADC_HandleTypeDef hadc1;
@@ -44,17 +47,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
         HAL_ADC_Start_IT(&hadc1);
         PWM_Counter++;
-
-        // if (PWM_Counter >= 160) {
-        //   DAC_Counter++;
-        //   dac_value = (uint16_t)(2010 + 2000 * sinf(2.0f * 3.14159f * ((float)DAC_Counter) / 160.0f));
-        //   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac_value);
-        // }
-
-        // if(enable_printf){
-        //   HAL_ADC_Start_IT(&hadc1);
-        //   printf("ADC=%u\r\n", (unsigned)g_adc_last);
-        // }
+        uint32_t before_freq_hz = TIM1_GetFrequencyHz();
+        if (before_freq_hz != g_tim1_pwm_freq_hz){
+            TIM1_SetFrequencyHz(g_tim1_pwm_freq_hz);
+        }
+        // 
     }
 }
 

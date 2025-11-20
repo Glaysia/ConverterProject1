@@ -94,6 +94,25 @@ extern "C" uint32_t TIM1_GetTimerClockHz(void)
   if (pclk2 == 0U) return 0U;
   return (clk_config.APB2CLKDivider == RCC_HCLK_DIV1) ? pclk2 : (pclk2 * 2U);
 }
+extern "C" uint32_t TIM1_GetFrequencyHz(void)
+{
+  uint32_t timer_clk_hz = TIM1_GetTimerClockHz();
+  if (timer_clk_hz == 0U) return 0U;
+
+  uint32_t factor =
+      ((htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED1) ||
+       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED2) ||
+       (htim1.Init.CounterMode == TIM_COUNTERMODE_CENTERALIGNED3)) ? 2U : 1U;
+
+  uint32_t presc_plus1 = htim1.Instance->PSC + 1U;
+  uint32_t arr_plus1 = __HAL_TIM_GET_AUTORELOAD(&htim1) + 1U;
+
+  uint64_t denom = (uint64_t)factor * (uint64_t)presc_plus1 * (uint64_t)arr_plus1;
+  if (denom == 0ULL) return 0U;
+
+  uint32_t freq_hz = (uint32_t)((((uint64_t)timer_clk_hz * 1000ULL) + (denom / 2ULL)) / denom); /* rounded */
+  return freq_hz/1000;
+}
 
 extern "C" void TIM1_SetFrequencyHz(uint32_t freq_hz)
 {
@@ -129,6 +148,8 @@ extern "C" void TIM1_SetFrequencyHz(uint32_t freq_hz)
   TIM1_SetDeadtimePercent(g_tim1_deadtime_percent);
 
   if (was_enabled) __HAL_TIM_ENABLE(&htim1);
+  g_tim1_pwm_freq_hz = TIM1_GetFrequencyHz();
+
 }
 
 extern "C" uint32_t TIM1_DeadtimeTicksToRegister(uint32_t ticks)
