@@ -21,6 +21,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -637,3 +641,7 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+#ifdef __cplusplus
+}
+#endif
