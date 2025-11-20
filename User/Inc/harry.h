@@ -36,3 +36,4 @@ void TIM1_SetDeadtimePercent(uint32_t percent);
 #ifdef __cplusplus
 }
 #endif
+

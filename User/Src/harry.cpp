@@ -49,9 +49,7 @@ extern "C" bool user_init(void) {
      *   4) TIM1 타이머 베이스, PWM, 보조 채널(PWMN)을 모두 시작
      *
      * 주의:
-     *   - 이 함수는 현재 실패 여부를 정교하게 검사하지 않고, 항상 true를 반환합니다.
-     *   - 만약 단계별 실패 처리를 하고 싶다면, HAL 함수들의 반환값을 확인한 뒤
-     *     false를 반환하도록 확장할 수 있습니다.
+     *   - 이 함수는 HAL 반환값을 확인하여, 어느 단계에서든 실패하면 false를 반환합니다.
      */
 
     /* 1) DAC CH2 시작 및 초기 값 0으로 설정 */
@@ -86,7 +84,6 @@ extern "C" bool user_init(void) {
     return true;
 }
 
-
 extern "C" uint32_t TIM1_GetTimerClockHz(void)
 {
   RCC_ClkInitTypeDef clk_config = {0};
@@ -98,7 +95,7 @@ extern "C" uint32_t TIM1_GetTimerClockHz(void)
   return (clk_config.APB2CLKDivider == RCC_HCLK_DIV1) ? pclk2 : (pclk2 * 2U);
 }
 
-extern "C"  void TIM1_SetFrequencyHz(uint32_t freq_hz)
+extern "C" void TIM1_SetFrequencyHz(uint32_t freq_hz)
 {
   if (freq_hz == 0U) return;
   uint32_t timer_clk_hz = TIM1_GetTimerClockHz();
@@ -134,7 +131,7 @@ extern "C"  void TIM1_SetFrequencyHz(uint32_t freq_hz)
   if (was_enabled) __HAL_TIM_ENABLE(&htim1);
 }
 
-extern "C"  uint32_t TIM1_DeadtimeTicksToRegister(uint32_t ticks)
+extern "C" uint32_t TIM1_DeadtimeTicksToRegister(uint32_t ticks)
 {
   if (ticks <= 127U)
   {
@@ -187,3 +184,4 @@ extern "C" void TIM1_SetDeadtimePercent(uint32_t percent)
   HAL_TIMEx_ConfigAsymmetricalDeadTime(&htim1, deadtime_reg); /* keep falling/rising edges aligned */
   htim1.Instance->EGR |= TIM_EGR_COMG; /* latch new DT when preload is on */
 }
+
