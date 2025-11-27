@@ -7,3 +7,4 @@ config_default
 .mxproject
 .project
 .idea
+*.raw
