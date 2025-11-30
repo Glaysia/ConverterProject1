@@ -50,6 +50,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
         Core/Harry/Harry.cpp
         Core/Harry/PWM.cpp
+        Core/Harry/Control.cpp
     # Add user sources here
 )
 

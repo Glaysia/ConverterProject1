@@ -114,6 +114,8 @@ void Error_Handler(void);
 #define LD2_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define ADC_DMA_BUF_LEN 256U
+extern uint16_t adc_dma_buffer[ADC_DMA_BUF_LEN];
 
 /* USER CODE END Private defines */
 

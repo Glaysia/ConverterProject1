@@ -34,7 +34,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define ADC_DMA_BUF_LEN 256U
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/

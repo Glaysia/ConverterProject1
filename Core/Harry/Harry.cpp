@@ -8,6 +8,8 @@
 
 #include <stdint.h>
 
+static float getOutputVoltage(void);
+
 extern "C" {
 
 /* Global pointers backing the printf/ADC helper hooks. */
@@ -40,11 +42,11 @@ int putchar(int ch)
 }
 
 /* Store the ADC instance for later helper routines or callbacks. */
-void harryADCInit(ADC_HandleTypeDef *hadc1, uint16_t adc_dma_buffer[], uint32_t ADC_DMA_BUF_LEN)
+void harryADCInit(ADC_HandleTypeDef *hadc1, uint16_t adc_dma_buffer[], uint32_t adc_dma_buf_len)
 {
     g_harry_adc = hadc1;
 
-    if (HAL_ADC_Start_DMA(hadc1, (uint32_t *)adc_dma_buffer, ADC_DMA_BUF_LEN) != HAL_OK)
+    if (HAL_ADC_Start_DMA(hadc1, (uint32_t *)adc_dma_buffer, adc_dma_buf_len) != HAL_OK)
     {
         Error_Handler();
     }
@@ -58,7 +60,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if (pwm0->newStatus != pwm0->oldStatus){
             pwm0->PwmUpdate();
         }
-        // HAL_ADC_Start_IT(g_harry_adc);
+        getOutputVoltage()
     }
 }
 
@@ -69,4 +71,12 @@ void harryPwmInit(TIM_HandleTypeDef *htim)
 {
     PWM *pwm0 = &global_pwms[0];
     pwm0->PwmInit(htim);
+}
+
+
+static float getOutputVoltage(void){
+    uint16_t adc_value = adc_dma_buffer[0];
+    // 0~4096 -> 0~10V
+    float ret = ((float)adc_value) * 0.000244140625 * 10;
+    return ret;
 }
