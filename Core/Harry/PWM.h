@@ -8,14 +8,11 @@
 extern "C" {
 #endif
 
+#include "Harry.h"
 #include "stm32f7xx_hal.h"
 #include <stdint.h>
 
-void harryPwmInit(TIM_HandleTypeDef *htim);
 
-void harryIOInit(UART_HandleTypeDef *huart);
-
-void harryADCInit(ADC_HandleTypeDef *hadc1);
 
 #ifdef __cplusplus
 }
@@ -33,7 +30,10 @@ public:
     PWM();
     uint32_t Harry_GetTimerClock();
     void PwmUpdate();
-    void PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz, float duty_pct, float deadtime_pct);
+    void PwmInit(TIM_HandleTypeDef *htim,
+                 uint32_t freq_hz = 100000U,
+                 float duty_pct = 49.0f,
+                 float deadtime_pct = 2.5f);
     void restartPwm(void)
     {   
         HAL_TIM_PWM_Stop_IT(this->htim, TIM_CHANNEL_1);
@@ -59,7 +59,7 @@ public:
     };
 };
 
-extern PWM global_pwms[4];
+extern PWM global_pwms[1];
 
 #endif /* __cplusplus */
 
