@@ -23,7 +23,7 @@
 /* USER CODE BEGIN Includes */
 
 #include <stdio.h>
-#include "harry.h"
+#include "PWM.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +50,7 @@ TIM_HandleTypeDef htim8;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-Harry pwm1;
+PWM pwm1;
 static uint16_t adc_dma_buffer[ADC_DMA_BUF_LEN];
 /* USER CODE END PV */
 
@@ -107,7 +107,7 @@ int main(void)
   harryIOInit(&huart3);
   harryPwmInit(&htim8);
   harryADCInit(&hadc1);
-  pwm1 = g_harry_instances[0];
+  pwm1 = global_pwms[0];
   // pwm1.setFrequency(270000);
   if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_dma_buffer, ADC_DMA_BUF_LEN) != HAL_OK)
   {

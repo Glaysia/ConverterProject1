@@ -23,14 +23,14 @@ void harryADCInit(ADC_HandleTypeDef *hadc1);
 
 #ifdef __cplusplus
 
-class Harry {
+class PWM {
 public:
     TIM_HandleTypeDef *htim;
     uint32_t freq_hz;
     float duty_pct;
     float deadtime_pct;
 
-    Harry();
+    PWM();
     uint32_t Harry_GetTimerClock();
     void PwmUpdate();
     void PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz, float duty_pct, float deadtime_pct);
@@ -59,7 +59,7 @@ public:
     };
 };
 
-extern Harry g_harry_instances[4];
+extern PWM global_pwms[4];
 
 #endif /* __cplusplus */
 

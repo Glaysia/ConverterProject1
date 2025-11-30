@@ -2,7 +2,7 @@
 // Created by harry on 25. 12. 1..
 //
 
-#include "harry.h"
+#include "PWM.h"
 #include "stm32f7xx_hal_adc.h"
 #include "stm32f7xx_hal_tim.h"
 
@@ -41,13 +41,13 @@ void harryADCInit(ADC_HandleTypeDef *hadc1)
 
 }
 
-Harry g_harry_instances[4];
+PWM global_pwms[4];
 
-Harry::Harry() {
+PWM::PWM() {
     htim = nullptr;
 }
 
-uint32_t Harry::Harry_GetTimerClock() {
+uint32_t PWM::Harry_GetTimerClock() {
     TIM_HandleTypeDef *handle = this->htim;
     
     if (handle == nullptr) {
@@ -72,7 +72,7 @@ uint32_t Harry::Harry_GetTimerClock() {
     return clock;
 }
 
-void Harry::PwmUpdate()
+void PWM::PwmUpdate()
 {
     if ((htim == nullptr) || (freq_hz == 0U)) {
         return;
@@ -124,7 +124,7 @@ void Harry::PwmUpdate()
 }
 
 
-void Harry::PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz = 100000, float duty_pct = 49.0, float deadtime_pct=2.5) {
+void PWM::PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz = 100000, float duty_pct = 49.0, float deadtime_pct=2.5) {
     this->htim = htim;
     this->freq_hz = freq_hz;
     this->duty_pct = duty_pct;
@@ -138,12 +138,12 @@ void Harry::PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz = 100000, float du
 
 void harryPwmInit(TIM_HandleTypeDef *htim)
 {
-    Harry *harry = &g_harry_instances[0];
+    PWM *harry = &global_pwms[0];
     harry->PwmInit(htim);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-    Harry pwm1 = g_harry_instances[0];
+    PWM pwm1 = global_pwms[0];
     if (htim == pwm1.htim) {
         // HAL_ADC_Start_IT(g_harry_adc);
     }
