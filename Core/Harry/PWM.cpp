@@ -3,6 +3,7 @@
 //
 
 #include "PWM.h"
+#include "main.h"
 #include "stm32f7xx_hal_tim.h"
 
 PWM global_pwms[1];
@@ -44,6 +45,9 @@ uint32_t PWM::Harry_GetTimerClock() const {
 
 void PWM::PwmUpdate()
 {
+    if(this->newStatus.freq_hz<3500){
+        Error_Handler();
+    }
     if ((htim == nullptr) || (newStatus.freq_hz == 0U)) {
         return;
     }
@@ -154,10 +158,11 @@ void PWM::restartPwm(void)
     HAL_TIMEx_PWMN_Stop_IT(this->htim, TIM_CHANNEL_1);
 
     this->oldStatus = this->getPwmStatusFromRegister();
+    this->newStatus = this->oldStatus;
 
     HAL_TIM_PWM_Start_IT(this->htim, TIM_CHANNEL_1);
     HAL_TIMEx_PWMN_Start_IT(this->htim, TIM_CHANNEL_1);
-    this->newStatus = this->getPwmStatusFromRegister();
+
 }
 
 void PWM::setFrequency(uint32_t freq_hz)
