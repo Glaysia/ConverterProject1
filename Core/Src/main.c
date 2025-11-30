@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "harry.hpp"
+// #include "harry.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -103,15 +103,7 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
-  // Harry_Pwm_Init(&htim8);
-  // pwm_update(&htim8 , TIM_CHANNEL_1, 247000, 49.5, 3.2);
-  // // 247 kHz, 49.5% duty cycle, 3.2% deadtime
-  
-  // HAL_TIM_Base_Init(&htim8);
-  // HAL_TIM_PWM_Init(&htim8);
 
-  // HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
-  // HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_1);
 
   /* USER CODE END 2 */
 
