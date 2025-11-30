@@ -13,7 +13,7 @@ extern "C" {
 
 void harryIOInit(UART_HandleTypeDef *huart);
 int __io_putchar(int ch);
-void harryADCInit(ADC_HandleTypeDef *hadc1);
+void harryADCInit(ADC_HandleTypeDef *hadc1, uint16_t* adc_dma_buffer, uint32_t ADC_DMA_BUF_LEN);
 
 #ifdef __cplusplus
 }

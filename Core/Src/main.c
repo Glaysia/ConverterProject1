@@ -51,8 +51,8 @@ TIM_HandleTypeDef htim8;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-PWM pwm1;
-static uint16_t adc_dma_buffer[ADC_DMA_BUF_LEN];
+PWM pwm0;
+uint16_t adc_dma_buffer[ADC_DMA_BUF_LEN];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,15 +107,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   harryIOInit(&huart3);
-  harryADCInit(&hadc1);
+  harryADCInit(&hadc1, adc_dma_buffer, ADC_DMA_BUF_LEN);
   harryPwmInit(&htim8);
 
-  pwm1 = global_pwms[0];
+  pwm0 = global_pwms[0];
   // pwm1.setFrequency(270000);
-  if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_dma_buffer, ADC_DMA_BUF_LEN) != HAL_OK)
-  {
-    Error_Handler();
-  }
+
 
   /* USER CODE END 2 */
 

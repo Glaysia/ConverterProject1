@@ -14,18 +14,23 @@ extern "C" {
 
 
 
+
 #ifdef __cplusplus
 }
 #endif
 
 #ifdef __cplusplus
 
-class PWM {
-public:
-    TIM_HandleTypeDef *htim;
+struct PwmStatus{
     uint32_t freq_hz;
     float duty_pct;
     float deadtime_pct;
+};
+
+class PWM {
+public:
+    TIM_HandleTypeDef *htim;
+    PwmStatus status;
 
     PWM();
     uint32_t Harry_GetTimerClock();
@@ -43,17 +48,17 @@ public:
     }
 
     void setFrequency(uint32_t freq_hz) {
-        this->freq_hz = freq_hz;
+        this->status.freq_hz = freq_hz;
         this->PwmUpdate();
         this->restartPwm();
     };
     void setDutyCycle(float duty_pct) {
-        this->duty_pct = duty_pct;
+        this->status.duty_pct = duty_pct;
         this->PwmUpdate();
         this->restartPwm();
     };
     void setDeadtime(float deadtime_pct) {
-        this->deadtime_pct = deadtime_pct;
+        this->status.deadtime_pct = deadtime_pct;
         this->PwmUpdate();
         this->restartPwm();
     };

@@ -10,14 +10,17 @@
 
 extern "C" {
 
+/* Global pointers backing the printf/ADC helper hooks. */
 static UART_HandleTypeDef *g_harry_uart = NULL;
 static ADC_HandleTypeDef *g_harry_adc = NULL;
 
+/* Remember which UART transports debug prints. */
 void harryIOInit(UART_HandleTypeDef *huart)
 {
     g_harry_uart = huart;
 }
 
+/* Blocking printf backend used by syscalls.c hooks. */
 int __io_putchar(int ch)
 {
     if (g_harry_uart == NULL) {
@@ -30,17 +33,24 @@ int __io_putchar(int ch)
     return ch;
 }
 
+/* C stdio wrapper that keeps standard behavior intact. */
 int putchar(int ch)
 {
     return __io_putchar(ch);
 }
 
-void harryADCInit(ADC_HandleTypeDef *hadc1)
+/* Store the ADC instance for later helper routines or callbacks. */
+void harryADCInit(ADC_HandleTypeDef *hadc1, uint16_t adc_dma_buffer[], uint32_t ADC_DMA_BUF_LEN)
 {
     g_harry_adc = hadc1;
+
+    if (HAL_ADC_Start_DMA(hadc1, (uint32_t *)adc_dma_buffer, ADC_DMA_BUF_LEN) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
-
+/* IRQ hook fired by HAL when the PWM timer rolls over. */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     PWM pwm1 = global_pwms[0];
@@ -51,6 +61,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 }
 
+/* Initialize PWM helper 0 using its internal defaults. */
 void harryPwmInit(TIM_HandleTypeDef *htim)
 {
     PWM *pwm0 = &global_pwms[0];
