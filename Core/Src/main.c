@@ -18,10 +18,12 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f7xx_hal_tim.h"
+#include "stm32f7xx_hal_tim_ex.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "user.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,6 +103,14 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_PWM_Init(&htim8);
+  
+  pwm_set_frequency(&htim8, 247000); // 247 kHz
+  pwm_set_deadtime(&htim8, 3.2);   // 3.2 percent
+  pwm_set_dutycycle(&htim8, TIM_CHANNEL_1, .0); // 50 percent
+
+  HAL_TIM_PWM_Start_IT(&htim8, TIM_CHANNEL_1);
+  HAL_TIMEx_PWMN_Start_IT(&htim8, TIM_CHANNEL_1);
 
   /* USER CODE END 2 */
 
