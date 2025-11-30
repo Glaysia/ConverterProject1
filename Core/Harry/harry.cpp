@@ -4,6 +4,33 @@
 
 #include "harry.h"
 
+extern "C" {
+
+static UART_HandleTypeDef *g_harry_uart = NULL;
+
+void harryIOInit(UART_HandleTypeDef *huart)
+{
+    g_harry_uart = huart;
+}
+
+int __io_putchar(int ch)
+{
+    if (g_harry_uart == NULL) {
+        return ch;
+    }
+
+    uint8_t data = (uint8_t)ch;
+    HAL_UART_Transmit(g_harry_uart, &data, 1, HAL_MAX_DELAY);
+    return ch;
+}
+
+int putchar(int ch)
+{
+    return __io_putchar(ch);
+}
+
+}
+
 
 Harry g_harry_instances[4];
 
@@ -88,7 +115,7 @@ void Harry::PwmUpdate()
 }
 
 
-void Harry::PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz = 100000, float duty_pct = 49.5, float deadtime_pct=0.7) {
+void Harry::PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz = 100000, float duty_pct = 49.0, float deadtime_pct=2.5) {
     this->htim = htim;
     this->freq_hz = freq_hz;
     this->duty_pct = duty_pct;
@@ -97,11 +124,11 @@ void Harry::PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz = 100000, float du
 
     HAL_TIM_Base_Init(this->htim);
     HAL_TIM_PWM_Init(this->htim);
-    HAL_TIM_PWM_Start(this->htim, TIM_CHANNEL_1);
-    HAL_TIMEx_PWMN_Start(this->htim,TIM_CHANNEL_1);
+    this->restartPwm();
 }
 
-void harryPwmInit(TIM_HandleTypeDef *htim) {
-    Harry harry = g_harry_instances[0];
-    harry.PwmInit(htim);
+void harryPwmInit(TIM_HandleTypeDef *htim)
+{
+    Harry *harry = &g_harry_instances[0];
+    harry->PwmInit(htim);
 }

@@ -38,6 +38,9 @@ add_executable(${CMAKE_PROJECT_NAME})
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
 
+# Treat main.c as C++ so printf hooks in harry.cpp link correctly
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/main.c PROPERTIES LANGUAGE CXX)
+
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths

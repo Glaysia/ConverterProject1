@@ -18,11 +18,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_tim.h"
 #include "stm32f7xx_hal_tim_ex.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+#include <stdio.h>
 #include "harry.h"
 /* USER CODE END Includes */
 
@@ -103,7 +106,10 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
+  harryIOInit(&huart3);
   harryPwmInit(&htim8);
+  
+  g_harry_instances[0].setFrequency(270000);
 
   /* USER CODE END 2 */
 
@@ -111,6 +117,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    // HAL_Delay(1000);
+    // printf("Hello, world! %d\r\n",sizeof(htim8));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
