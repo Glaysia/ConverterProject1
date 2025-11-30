@@ -95,6 +95,9 @@ void PWM::PwmUpdate()
         MODIFY_REG(htim->Instance->BDTR, TIM_BDTR_DTG, deadtime_ticks);
     }
 
+    /* Keep cached status in sync so HAL callbacks avoid stop/start overhead. */
+    this->oldStatus = this->getPwmStatusFromRegister();
+    this->newStatus = this->oldStatus;
 }
 
 PwmStatus PWM::getPwmStatusFromRegister() const
@@ -144,25 +147,17 @@ void PWM::PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz, float duty_pct, flo
     this->newStatus.freq_hz = freq_hz;
     this->newStatus.duty_pct = duty_pct;
     this->newStatus.deadtime_pct = deadtime_pct;
-    this->PwmUpdate();
+    this->oldStatus = this->newStatus;
 
     HAL_TIM_Base_Init(this->htim);
     HAL_TIM_PWM_Init(this->htim);
     HAL_TIM_Base_Start_IT(this->htim);
-    this->restartPwm();
-}
-
-void PWM::restartPwm(void)
-{
-    HAL_TIM_PWM_Stop_IT(this->htim, TIM_CHANNEL_1);
-    HAL_TIMEx_PWMN_Stop_IT(this->htim, TIM_CHANNEL_1);
-
-    this->oldStatus = this->getPwmStatusFromRegister();
-    this->newStatus = this->oldStatus;
-
     HAL_TIM_PWM_Start_IT(this->htim, TIM_CHANNEL_1);
-    HAL_TIMEx_PWMN_Start_IT(this->htim, TIM_CHANNEL_1);
+    if (IS_TIM_ADVANCED_INSTANCE(this->htim->Instance)) {
+        HAL_TIMEx_PWMN_Start_IT(this->htim, TIM_CHANNEL_1);
+    }
 
+    this->PwmUpdate();
 }
 
 void PWM::setFrequency(uint32_t freq_hz)

@@ -57,7 +57,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim == pwm0->htim) {
         if (pwm0->newStatus != pwm0->oldStatus){
             pwm0->PwmUpdate();
-            pwm0->restartPwm();
         }
         // HAL_ADC_Start_IT(g_harry_adc);
     }

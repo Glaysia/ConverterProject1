@@ -54,7 +54,6 @@ public:
                  float deadtime_pct = 2.5f);
     PwmStatus getPwmStatusFromRegister() const;
 
-    void restartPwm(void);
     void setFrequency(uint32_t freq_hz);
     void setDutyCycle(float duty_pct);
     void setDeadtime(float deadtime_pct);
