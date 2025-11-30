@@ -49,7 +49,7 @@ TIM_HandleTypeDef htim8;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-
+Harry pwm1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -102,8 +102,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   harryIOInit(&huart3);
   harryPwmInit(&htim8);
-  
-  g_harry_instances[0].setFrequency(270000);
+  pwm1 = g_harry_instances[0];
+  // pwm1.setFrequency(270000);
 
   /* USER CODE END 2 */
 
