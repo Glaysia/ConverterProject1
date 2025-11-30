@@ -27,41 +27,37 @@ struct PwmStatus{
     float deadtime_pct;
 };
 
+inline bool operator==(const PwmStatus &lhs, const PwmStatus &rhs)
+{
+    return (lhs.freq_hz == rhs.freq_hz) &&
+           (lhs.duty_pct == rhs.duty_pct) &&
+           (lhs.deadtime_pct == rhs.deadtime_pct);
+}
+
+inline bool operator!=(const PwmStatus &lhs, const PwmStatus &rhs)
+{
+    return !(lhs == rhs);
+}
+
 class PWM {
 public:
     TIM_HandleTypeDef *htim;
-    PwmStatus status;
+    PwmStatus newStatus;
+    PwmStatus oldStatus;
 
     PWM();
-    uint32_t Harry_GetTimerClock();
+    uint32_t Harry_GetTimerClock() const;
     void PwmUpdate();
     void PwmInit(TIM_HandleTypeDef *htim,
                  uint32_t freq_hz = 100000U,
                  float duty_pct = 49.0f,
                  float deadtime_pct = 2.5f);
-    void restartPwm(void)
-    {   
-        HAL_TIM_PWM_Stop_IT(this->htim, TIM_CHANNEL_1);
-        HAL_TIMEx_PWMN_Stop_IT(this->htim,TIM_CHANNEL_1);
-        HAL_TIM_PWM_Start_IT(this->htim, TIM_CHANNEL_1);
-        HAL_TIMEx_PWMN_Start_IT(this->htim,TIM_CHANNEL_1);
-    }
+    PwmStatus getPwmStatusFromRegister() const;
 
-    void setFrequency(uint32_t freq_hz) {
-        this->status.freq_hz = freq_hz;
-        this->PwmUpdate();
-        this->restartPwm();
-    };
-    void setDutyCycle(float duty_pct) {
-        this->status.duty_pct = duty_pct;
-        this->PwmUpdate();
-        this->restartPwm();
-    };
-    void setDeadtime(float deadtime_pct) {
-        this->status.deadtime_pct = deadtime_pct;
-        this->PwmUpdate();
-        this->restartPwm();
-    };
+    void restartPwm(void);
+    void setFrequency(uint32_t freq_hz);
+    void setDutyCycle(float duty_pct);
+    void setDeadtime(float deadtime_pct);
 };
 
 extern PWM global_pwms[1];

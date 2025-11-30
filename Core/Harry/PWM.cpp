@@ -9,9 +9,12 @@ PWM global_pwms[1];
 
 PWM::PWM() {
     htim = nullptr;
+    newStatus.freq_hz = 0U;
+    newStatus.duty_pct = 0.0f;
+    newStatus.deadtime_pct = 0.0f;
 }
 
-uint32_t PWM::Harry_GetTimerClock() {
+uint32_t PWM::Harry_GetTimerClock() const {
     TIM_HandleTypeDef *handle = this->htim;
     
     if (handle == nullptr) {
@@ -38,7 +41,7 @@ uint32_t PWM::Harry_GetTimerClock() {
 
 void PWM::PwmUpdate()
 {
-    if ((htim == nullptr) || (status.freq_hz == 0U)) {
+    if ((htim == nullptr) || (newStatus.freq_hz == 0U)) {
         return;
     }
 
@@ -47,7 +50,7 @@ void PWM::PwmUpdate()
         return;
     }
 
-    uint32_t ticks_per_period = tim_clk / status.freq_hz;
+    uint32_t ticks_per_period = tim_clk / newStatus.freq_hz;
     if (ticks_per_period == 0U) {
         ticks_per_period = 1U;
     }
@@ -56,7 +59,7 @@ void PWM::PwmUpdate()
     htim->Init.Period = auto_reload;
     __HAL_TIM_SET_AUTORELOAD(htim, auto_reload);
 
-    float duty = status.duty_pct;
+    float duty = newStatus.duty_pct;
     if (duty < 0.0f) {
         duty = 0.0f;
     } else if (duty > 100.0f) {
@@ -69,7 +72,7 @@ void PWM::PwmUpdate()
     }
     __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, pulse);
 
-    float deadtime = status.deadtime_pct;
+    float deadtime = newStatus.deadtime_pct;
     if (deadtime < 0.0f) {
         deadtime = 0.0f;
     } else if (deadtime > 100.0f) {
@@ -86,15 +89,90 @@ void PWM::PwmUpdate()
     }
 
 }
+
+PwmStatus PWM::getPwmStatusFromRegister() const
+{
+    PwmStatus result = {0U, 0.0f, 0.0f};
+
+    TIM_HandleTypeDef *handle = this->htim;
+    if (handle == nullptr) {
+        return result;
+    }
+
+    uint32_t auto_reload = handle->Instance->ARR;
+    uint32_t period_ticks = auto_reload + 1U;
+    if (period_ticks == 0U) {
+        period_ticks = 0xFFFFFFFFU;
+    }
+
+    uint32_t tim_clk = this->Harry_GetTimerClock();
+    if ((tim_clk != 0U) && (period_ticks != 0U)) {
+        result.freq_hz = tim_clk / period_ticks;
+    }
+
+    uint32_t pulse = handle->Instance->CCR1;
+    if (period_ticks != 0U) {
+        float duty = ((float)pulse * 100.0f) / (float)period_ticks;
+        if (duty > 100.0f) {
+            duty = 100.0f;
+        }
+        result.duty_pct = duty;
+    }
+
+    if (IS_TIM_ADVANCED_INSTANCE(handle->Instance) && (period_ticks != 0U)) {
+        uint32_t deadtime_ticks = handle->Instance->BDTR & TIM_BDTR_DTG;
+        float deadtime = ((float)deadtime_ticks * 100.0f) / (float)period_ticks;
+        if (deadtime > 100.0f) {
+            deadtime = 100.0f;
+        }
+        result.deadtime_pct = deadtime;
+    }
+
+    return result;
+}
+
 void PWM::PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz, float duty_pct, float deadtime_pct)
 {
     this->htim = htim;
-    this->status.freq_hz = freq_hz;
-    this->status.duty_pct = duty_pct;
-    this->status.deadtime_pct = deadtime_pct;
+    this->newStatus.freq_hz = freq_hz;
+    this->newStatus.duty_pct = duty_pct;
+    this->newStatus.deadtime_pct = deadtime_pct;
     this->PwmUpdate();
 
     HAL_TIM_Base_Init(this->htim);
     HAL_TIM_PWM_Init(this->htim);
+    HAL_TIM_Base_Start_IT(this->htim);
+    this->restartPwm();
+}
+
+void PWM::restartPwm(void)
+{
+    this->newStatus = this->getPwmStatusFromRegister();
+    this->oldStatus = this->newStatus;
+
+    HAL_TIM_PWM_Stop_IT(this->htim, TIM_CHANNEL_1);
+    HAL_TIMEx_PWMN_Stop_IT(this->htim, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start_IT(this->htim, TIM_CHANNEL_1);
+    HAL_TIMEx_PWMN_Start_IT(this->htim, TIM_CHANNEL_1);
+}
+
+void PWM::setFrequency(uint32_t freq_hz)
+{
+    this->newStatus.freq_hz = freq_hz;
+    this->PwmUpdate();
+    this->restartPwm();
+}
+
+void PWM::setDutyCycle(float duty_pct)
+{
+    this->newStatus.duty_pct = duty_pct;
+    this->PwmUpdate();
+    this->restartPwm();
+}
+
+void PWM::setDeadtime(float deadtime_pct)
+{
+    this->newStatus.deadtime_pct = deadtime_pct;
+    this->PwmUpdate();
     this->restartPwm();
 }

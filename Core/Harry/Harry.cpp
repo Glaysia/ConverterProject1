@@ -55,6 +55,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     PWM pwm1 = global_pwms[0];
     if (htim == pwm1.htim) {
+        if (pwm1.newStatus != pwm1.oldStatus){
+            pwm1.restartPwm();
+        }
         // HAL_ADC_Start_IT(g_harry_adc);
     }
 }
