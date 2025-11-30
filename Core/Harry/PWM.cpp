@@ -163,20 +163,14 @@ void PWM::restartPwm(void)
 void PWM::setFrequency(uint32_t freq_hz)
 {
     this->newStatus.freq_hz = freq_hz;
-    this->PwmUpdate();
-    this->restartPwm();
 }
 
 void PWM::setDutyCycle(float duty_pct)
 {
     this->newStatus.duty_pct = duty_pct;
-    this->PwmUpdate();
-    this->restartPwm();
 }
 
 void PWM::setDeadtime(float deadtime_pct)
 {
     this->newStatus.deadtime_pct = deadtime_pct;
-    this->PwmUpdate();
-    this->restartPwm();
 }
