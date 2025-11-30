@@ -3,10 +3,13 @@
 //
 
 #include "harry.h"
+#include "stm32f7xx_hal_adc.h"
+#include "stm32f7xx_hal_tim.h"
 
 extern "C" {
 
 static UART_HandleTypeDef *g_harry_uart = NULL;
+static ADC_HandleTypeDef *g_harry_adc = NULL;
 
 void harryIOInit(UART_HandleTypeDef *huart)
 {
@@ -29,8 +32,14 @@ int putchar(int ch)
     return __io_putchar(ch);
 }
 
+void harryADCInit(ADC_HandleTypeDef *hadc1)
+{
+    g_harry_adc = hadc1;
 }
 
+
+
+}
 
 Harry g_harry_instances[4];
 
@@ -131,4 +140,11 @@ void harryPwmInit(TIM_HandleTypeDef *htim)
 {
     Harry *harry = &g_harry_instances[0];
     harry->PwmInit(htim);
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+    Harry pwm1 = g_harry_instances[0];
+    if (htim == pwm1.htim) {
+        // HAL_ADC_Start_IT(g_harry_adc);
+    }
 }

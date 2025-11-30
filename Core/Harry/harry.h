@@ -14,6 +14,9 @@ extern "C" {
 void harryPwmInit(TIM_HandleTypeDef *htim);
 
 void harryIOInit(UART_HandleTypeDef *huart);
+
+void harryADCInit(ADC_HandleTypeDef *hadc1);
+
 #ifdef __cplusplus
 }
 #endif
@@ -33,10 +36,10 @@ public:
     void PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz, float duty_pct, float deadtime_pct);
     void restartPwm(void)
     {   
-        HAL_TIM_PWM_Stop(this->htim, TIM_CHANNEL_1);
-        HAL_TIMEx_PWMN_Stop(this->htim,TIM_CHANNEL_1);
-        HAL_TIM_PWM_Start(this->htim, TIM_CHANNEL_1);
-        HAL_TIMEx_PWMN_Start(this->htim,TIM_CHANNEL_1);
+        HAL_TIM_PWM_Stop_IT(this->htim, TIM_CHANNEL_1);
+        HAL_TIMEx_PWMN_Stop_IT(this->htim,TIM_CHANNEL_1);
+        HAL_TIM_PWM_Start_IT(this->htim, TIM_CHANNEL_1);
+        HAL_TIMEx_PWMN_Start_IT(this->htim,TIM_CHANNEL_1);
     }
 
     void setFrequency(uint32_t freq_hz) {
