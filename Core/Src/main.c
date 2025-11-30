@@ -51,7 +51,7 @@ TIM_HandleTypeDef htim8;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-PWM pwm0;
+PWM* pwm0;
 uint16_t adc_dma_buffer[ADC_DMA_BUF_LEN];
 /* USER CODE END PV */
 
@@ -110,7 +110,7 @@ int main(void)
   harryADCInit(&hadc1, adc_dma_buffer, ADC_DMA_BUF_LEN);
   harryPwmInit(&htim8);
 
-  pwm0 = global_pwms[0];
+  pwm0 = &global_pwms[0];
   // pwm1.setFrequency(270000);
 
 

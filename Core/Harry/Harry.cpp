@@ -53,10 +53,11 @@ void harryADCInit(ADC_HandleTypeDef *hadc1, uint16_t adc_dma_buffer[], uint32_t 
 /* IRQ hook fired by HAL when the PWM timer rolls over. */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    PWM pwm1 = global_pwms[0];
-    if (htim == pwm1.htim) {
-        if (pwm1.newStatus != pwm1.oldStatus){
-            pwm1.restartPwm();
+    PWM *pwm0 = &global_pwms[0];
+    if (htim == pwm0->htim) {
+        if (pwm0->newStatus != pwm0->oldStatus){
+            pwm0->PwmUpdate();
+            pwm0->restartPwm();
         }
         // HAL_ADC_Start_IT(g_harry_adc);
     }
