@@ -4,22 +4,36 @@
 
 #ifndef POWER_HARRY_H
 #define POWER_HARRY_H
-
-class Harry {
-public:
-    Harry();
-    void performAction();
-};
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include "stm32f7xx_hal.h"
+#include <stdint.h>
 
-
+void harryPwmInit(TIM_HandleTypeDef *htim);
 
 #ifdef __cplusplus
-} 
+}
 #endif
+
+#ifdef __cplusplus
+
+class Harry {
+public:
+    TIM_HandleTypeDef *htim;
+    uint32_t freq_hz;
+    float duty_pct;
+    float deadtime_pct;
+
+    Harry();
+    uint32_t Harry_GetTimerClock();
+    void PwmUpdate();
+    void PwmInit(TIM_HandleTypeDef *htim, uint32_t freq_hz, float duty_pct, float deadtime_pct);
+};
+
+extern Harry g_harry_instances[4];
+
+#endif /* __cplusplus */
 
 #endif //POWER_HARRY_H
