@@ -33,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define ADC_DMA_BUF_LEN 256U
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,6 +51,7 @@ UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 Harry pwm1;
+static uint16_t adc_dma_buffer[ADC_DMA_BUF_LEN];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -108,6 +109,10 @@ int main(void)
   harryADCInit(&hadc1);
   pwm1 = g_harry_instances[0];
   // pwm1.setFrequency(270000);
+  if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_dma_buffer, ADC_DMA_BUF_LEN) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   /* USER CODE END 2 */
 
@@ -115,8 +120,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // HAL_Delay(1000);
-    // printf("Hello, world! %d\r\n",sizeof(htim8));
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
