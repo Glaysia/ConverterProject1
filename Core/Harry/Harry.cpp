@@ -60,7 +60,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if (pwm0->newStatus != pwm0->oldStatus){
             pwm0->PwmUpdate();
         }
-        getOutputVoltage()
+        // getOutputVoltage()
     }
 }
 

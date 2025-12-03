@@ -9,7 +9,6 @@ extern "C" {
 #endif
 
 #include "Harry.h"
-#include "stm32f7xx_hal.h"
 #include <stdint.h>
 
 

@@ -105,9 +105,9 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
-  harryIOInit(&huart3);
+  harryIOInit(&huart2);
   harryADCInit(&hadc1, adc_dma_buffer, ADC_DMA_BUF_LEN);
-  harryPwmInit(&htim8);
+  harryPwmInit(&htim1);
 
   pwm0 = &global_pwms[0];
   // pwm1.setFrequency(270000);

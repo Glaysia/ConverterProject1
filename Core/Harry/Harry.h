@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "stm32f7xx_hal.h"
+#include "stm32f4xx_hal.h"
 
 void harryIOInit(UART_HandleTypeDef *huart);
 int __io_putchar(int ch);

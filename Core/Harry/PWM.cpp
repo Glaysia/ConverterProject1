@@ -4,7 +4,6 @@
 
 #include "PWM.h"
 #include "main.h"
-#include "stm32f7xx_hal_tim.h"
 
 PWM global_pwms[1];
 
@@ -26,7 +25,7 @@ uint32_t PWM::Harry_GetTimerClock() const {
     }
 
     uint32_t clock;
-    if ((handle->Instance == TIM1) || (handle->Instance == TIM8) ||
+    if ((handle->Instance == TIM1) || /*(handle->Instance == TIM8) ||*/
         (handle->Instance == TIM9) || (handle->Instance == TIM10) ||
         (handle->Instance == TIM11)) {
         clock = HAL_RCC_GetPCLK2Freq();
