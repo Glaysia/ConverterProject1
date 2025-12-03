@@ -20,7 +20,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set the project name
-set(CMAKE_PROJECT_NAME Power)
+set(CMAKE_PROJECT_NAME PowerF411)
 
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -30,16 +30,13 @@ project(${CMAKE_PROJECT_NAME})
 message("Build type: " ${CMAKE_BUILD_TYPE})
 
 # Enable CMake support for ASM and C languages
-enable_language(C CXX ASM)
+enable_language(C ASM)
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME})
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
-
-# Treat main.c as C++ so printf hooks in harry.cpp link correctly
-set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/main.c PROPERTIES LANGUAGE CXX)
 
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -48,7 +45,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-        Core/Harry/Harry.cpp
+Core/Harry/Harry.cpp
         Core/Harry/PWM.cpp
         Core/Harry/Control.cpp
     # Add user sources here
@@ -56,7 +53,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    Core/Harry
+Core/Harry
     # Add user defined include paths
 )
 
