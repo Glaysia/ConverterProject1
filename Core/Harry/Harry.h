@@ -14,6 +14,7 @@ extern "C" {
 void harryIOInit(UART_HandleTypeDef *huart);
 int __io_putchar(int ch);
 void harryADCInit(ADC_HandleTypeDef *hadc1, uint16_t* adc_dma_buffer, uint32_t adc_dma_buf_len);
+extern volatile float g_adc_scaled_average;
 
 #ifdef __cplusplus
 }

@@ -10,11 +10,18 @@
 
 static float getOutputVoltage(void);
 
+/* Divider: sig -> 20k -> tap -> 36k -> gnd. Scale raw counts to source voltage. */
+#define ADC_ERROR_CFACTOR (1.018f)
+#define ADC_SCALE_FACTOR  (0.0012529058f)*(ADC_ERROR_CFACTOR)  /* 3.3 V * (20 + 36) / 36 / 4096 */
+#define ADC_AVG_WINDOW    (50U)
+
 extern "C" {
 
 /* Global pointers backing the printf/ADC helper hooks. */
 static UART_HandleTypeDef *g_harry_uart = NULL;
 static ADC_HandleTypeDef *g_harry_adc = NULL;
+extern TIM_HandleTypeDef htim2;
+volatile float g_adc_scaled_average = 0.0f;
 
 /* Remember which UART transports debug prints. */
 void harryIOInit(UART_HandleTypeDef *huart)
@@ -44,8 +51,8 @@ int putchar(int ch)
 /* Store the ADC instance for later helper routines or callbacks. */
 void harryADCInit(ADC_HandleTypeDef *hadc1, uint16_t adc_dma_buffer[], uint32_t adc_dma_buf_len)
 {
+    HAL_TIM_Base_Start_IT(&htim2);
     g_harry_adc = hadc1;
-    
     if (HAL_ADC_Start_DMA(hadc1, (uint32_t *)adc_dma_buffer, adc_dma_buf_len) != HAL_OK)
     {
         Error_Handler();
@@ -61,6 +68,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
             pwm0->PwmUpdate();
         }
         // getOutputVoltage()
+    }
+
+    if (htim == &htim2) {
+        if ((g_harry_adc == NULL) || (g_harry_adc->DMA_Handle == NULL)) {
+            return;
+        }
+
+        static float ema = 0.0f; /* simple IIR as an O(1) moving-average approximation */
+
+        uint32_t remaining = __HAL_DMA_GET_COUNTER(g_harry_adc->DMA_Handle);
+        uint32_t write_idx = (ADC_DMA_BUF_LEN - remaining) % ADC_DMA_BUF_LEN;
+        uint32_t latest_idx = (write_idx + ADC_DMA_BUF_LEN - 1U) % ADC_DMA_BUF_LEN;
+
+        const float sample = (float)adc_dma_buffer[latest_idx];
+        ema += (sample - ema) * (1.0f / (float)ADC_AVG_WINDOW);
+        g_adc_scaled_average = ema * ADC_SCALE_FACTOR;
     }
 }
 
