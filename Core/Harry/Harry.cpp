@@ -9,11 +9,19 @@
 #include <stdint.h>
 
 static float getOutputVoltage(void);
+static float clampf(float value, float min_v, float max_v);
 
 /* Divider: sig -> 20k -> tap -> 36k -> gnd. Scale raw counts to source voltage. */
 #define ADC_ERROR_CFACTOR (1.018f)
 #define ADC_SCALE_FACTOR  (0.0012529058f)*(ADC_ERROR_CFACTOR)  /* 3.3 V * (20 + 36) / 36 / 4096 */
 #define ADC_AVG_WINDOW    (50U)
+/* PI control targets (voltage reference 4 V, freq min/max in Hz). */
+#define CTRL_TARGET_VOLTS   (4.0f)
+#define CTRL_FREQ_MIN_HZ    (28000.0f)
+#define CTRL_FREQ_MAX_HZ    (100000.0f)
+#define CTRL_KP             (8000.0f)
+#define CTRL_KI             (2000.0f)
+#define CTRL_LOOP_DT_SEC    (0.001f) /* TIM2 tick ~1 kHz */
 
 extern "C" {
 
@@ -59,6 +67,49 @@ void harryADCInit(ADC_HandleTypeDef *hadc1, uint16_t adc_dma_buffer[], uint32_t 
     }
 }
 
+/* Update EMA of the latest ADC sample coming from the DMA ring. */
+static void harryUpdateAdcAverage(void)
+{
+    if ((g_harry_adc == NULL) || (g_harry_adc->DMA_Handle == NULL)) {
+        return;
+    }
+
+    static float ema = 0.0f; /* simple IIR as an O(1) moving-average approximation */
+
+    uint32_t remaining = __HAL_DMA_GET_COUNTER(g_harry_adc->DMA_Handle);
+    uint32_t write_idx = (ADC_DMA_BUF_LEN - remaining) % ADC_DMA_BUF_LEN;
+    uint32_t latest_idx = (write_idx + ADC_DMA_BUF_LEN - 1U) % ADC_DMA_BUF_LEN;
+
+    const float sample = (float)adc_dma_buffer[latest_idx];
+    ema += (sample - ema) * (1.0f / (float)ADC_AVG_WINDOW);
+    g_adc_scaled_average = ema * ADC_SCALE_FACTOR;
+}
+
+/* Run a simple PI controller that lowers frequency when voltage is low. */
+static void harryRunPiControl(void)
+{
+    static float integrator = 0.0f;
+    static uint8_t initialized = 0U;
+
+    PWM *pwm0 = &global_pwms[0];
+    if (pwm0 == NULL) {
+        return;
+    }
+
+    float freq_cmd = (CTRL_FREQ_MIN_HZ + CTRL_FREQ_MAX_HZ) * 0.5f;
+    if (initialized == 0U) {
+        integrator = 0.0f;
+        initialized = 1U;
+    }
+
+    const float error = CTRL_TARGET_VOLTS - g_adc_scaled_average;
+    integrator += error * CTRL_KI * CTRL_LOOP_DT_SEC;
+    freq_cmd -= (CTRL_KP * error) + integrator;
+
+    freq_cmd = clampf(freq_cmd, CTRL_FREQ_MIN_HZ, CTRL_FREQ_MAX_HZ);
+    pwm0->setFrequency((uint32_t)freq_cmd);
+}
+
 /* IRQ hook fired by HAL when the PWM timer rolls over. */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -71,19 +122,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 
     if (htim == &htim2) {
-        if ((g_harry_adc == NULL) || (g_harry_adc->DMA_Handle == NULL)) {
-            return;
-        }
-
-        static float ema = 0.0f; /* simple IIR as an O(1) moving-average approximation */
-
-        uint32_t remaining = __HAL_DMA_GET_COUNTER(g_harry_adc->DMA_Handle);
-        uint32_t write_idx = (ADC_DMA_BUF_LEN - remaining) % ADC_DMA_BUF_LEN;
-        uint32_t latest_idx = (write_idx + ADC_DMA_BUF_LEN - 1U) % ADC_DMA_BUF_LEN;
-
-        const float sample = (float)adc_dma_buffer[latest_idx];
-        ema += (sample - ema) * (1.0f / (float)ADC_AVG_WINDOW);
-        g_adc_scaled_average = ema * ADC_SCALE_FACTOR;
+        harryUpdateAdcAverage();
+        harryRunPiControl();
     }
 }
 
@@ -95,16 +135,26 @@ void harryPwmInit(TIM_HandleTypeDef *htim)
     PWM *pwm0 = &global_pwms[0];
     pwm0->PwmInit(
         htim,
-        49000u,
+        29000u,
         50.0f,
         2.5f
     );
 }
 
-
-static float getOutputVoltage(void){
+static float getOutputVoltage(void)
+{
     uint16_t adc_value = adc_dma_buffer[0];
-    // 0~4096 -> 0~10V
-    float ret = ((float)adc_value) * 0.000244140625 * 10;
+    float ret = ((float)adc_value) * ADC_SCALE_FACTOR;
     return ret;
+}
+
+static float clampf(float value, float min_v, float max_v)
+{
+    if (value < min_v) {
+        return min_v;
+    }
+    if (value > max_v) {
+        return max_v;
+    }
+    return value;
 }
