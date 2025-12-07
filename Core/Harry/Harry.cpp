@@ -45,7 +45,7 @@ int putchar(int ch)
 void harryADCInit(ADC_HandleTypeDef *hadc1, uint16_t adc_dma_buffer[], uint32_t adc_dma_buf_len)
 {
     g_harry_adc = hadc1;
-
+    
     if (HAL_ADC_Start_DMA(hadc1, (uint32_t *)adc_dma_buffer, adc_dma_buf_len) != HAL_OK)
     {
         Error_Handler();
@@ -70,7 +70,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void harryPwmInit(TIM_HandleTypeDef *htim)
 {
     PWM *pwm0 = &global_pwms[0];
-    pwm0->PwmInit(htim);
+    pwm0->PwmInit(
+        htim,
+        49000u,
+        50.0f,
+        2.5f
+    );
 }
 
 
