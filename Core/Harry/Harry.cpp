@@ -129,10 +129,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         // getOutputVoltage()
     }
 
-    // if (htim == &htim2) {
-    //     harryUpdateAdcAverage();
-    //     harryRunPiControl();
-    // }
+    if (htim == &htim2) {
+        harryUpdateAdcAverage();
+        harryRunPiControl();
+    }
 }
 
 }
@@ -149,12 +149,6 @@ void harryPwmInit(TIM_HandleTypeDef *htim)
     );
 }
 
-static float getOutputVoltage(void)
-{
-    uint16_t adc_value = adc_dma_buffer[0];
-    float ret = ((float)adc_value) * ADC_SCALE_FACTOR;
-    return ret;
-}
 
 static float clampf(float value, float min_v, float max_v)
 {
