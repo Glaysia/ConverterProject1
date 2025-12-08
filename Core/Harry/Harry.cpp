@@ -129,10 +129,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         // getOutputVoltage()
     }
 
-    if (htim == &htim2) {
-        harryUpdateAdcAverage();
-        harryRunPiControl();
-    }
+    // if (htim == &htim2) {
+    //     harryUpdateAdcAverage();
+    //     harryRunPiControl();
+    // }
 }
 
 }
@@ -143,7 +143,7 @@ void harryPwmInit(TIM_HandleTypeDef *htim)
     PWM *pwm0 = &global_pwms[0];
     pwm0->PwmInit(
         htim,
-        29000u,
+        51000u,
         50.0f,
         2.5f
     );

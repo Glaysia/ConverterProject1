@@ -25,9 +25,7 @@ uint32_t PWM::Harry_GetTimerClock() const {
     }
 
     uint32_t clock;
-    if ((handle->Instance == TIM1) || /*(handle->Instance == TIM8) ||*/
-        (handle->Instance == TIM9) || (handle->Instance == TIM10) ||
-        (handle->Instance == TIM11)) {
+    if (handle->Instance == TIM1 ) {
         clock = HAL_RCC_GetPCLK2Freq();
         if ((RCC->CFGR & RCC_CFGR_PPRE2) != RCC_CFGR_PPRE2_DIV1) {
             clock *= 2U;
