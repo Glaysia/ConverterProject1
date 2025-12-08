@@ -12,15 +12,16 @@ static float getOutputVoltage(void);
 static float clampf(float value, float min_v, float max_v);
 
 /* Divider: sig -> 20k -> tap -> 36k -> gnd. Scale raw counts to source voltage. */
-#define ADC_ERROR_CFACTOR (1.018f)
-#define ADC_SCALE_FACTOR  (0.0012529058f)*(ADC_ERROR_CFACTOR)  /* 3.3 V * (20 + 36) / 36 / 4096 */
-#define ADC_AVG_WINDOW    (50U)
+#define ADC_ERROR_CFACTOR (1.02f)
+#define ADC_ERROR_VFACTOR (0.0f)
+#define ADC_SCALE_FACTOR  (0.0012529058f)*(ADC_ERROR_CFACTOR)+(ADC_ERROR_VFACTOR)  /* 3.3 V * (20 + 36) / 36 / 4096 */
+#define ADC_AVG_WINDOW    (200U)
 /* PI control targets (voltage reference 4 V, freq min/max in Hz). */
-#define CTRL_TARGET_VOLTS   (4.0f)
-#define CTRL_FREQ_MIN_HZ    (28000.0f)
+#define CTRL_TARGET_VOLTS   (5.0f)
+#define CTRL_FREQ_MIN_HZ    (24800.0f)
 #define CTRL_FREQ_MAX_HZ    (100000.0f)
-#define CTRL_KP             (8000.0f)
-#define CTRL_KI             (2000.0f)
+#define CTRL_KP             (60000.0f)
+#define CTRL_KI             (50000.0f)
 #define CTRL_LOOP_DT_SEC    (0.001f) /* TIM2 tick ~1 kHz */
 
 extern "C" {
@@ -106,8 +107,15 @@ static void harryRunPiControl(void)
     integrator += error * CTRL_KI * CTRL_LOOP_DT_SEC;
     freq_cmd -= (CTRL_KP * error) + integrator;
 
-    freq_cmd = clampf(freq_cmd, CTRL_FREQ_MIN_HZ, CTRL_FREQ_MAX_HZ);
-    pwm0->setFrequency((uint32_t)freq_cmd);
+    /* Anti-windup: bleed the integrator when we hit the rails so we can recover. */
+    const float limited_freq = clampf(freq_cmd, CTRL_FREQ_MIN_HZ, CTRL_FREQ_MAX_HZ);
+    if (limited_freq != freq_cmd) {
+        integrator += (freq_cmd - limited_freq);
+    }
+
+    pwm0->setFrequency((uint32_t)limited_freq);
+    pwm0->setDutyCycle((float)50.0f);
+    pwm0->setDeadtime((float)2.5f);
 }
 
 /* IRQ hook fired by HAL when the PWM timer rolls over. */
